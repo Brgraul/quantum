@@ -29,7 +29,7 @@ def unitary_from_hermitian(hermitian):
     return U
 
 
-def hermitian_from_wheights(wheights, dimension):
+def hermitian_from_weights(weights, dimension):
     diagonals = wheights[:dimension]
     dim = ((dimension**2 - dimension) // 2) + dimension
     reals = wheights[dimension:dim]
@@ -44,8 +44,8 @@ def hermitian_from_wheights(wheights, dimension):
 
 if __name__ == "__main__":
     inputs = np.random.random(DIMENSION)
-    wheights = np.random.random(DIMENSION**2)
-    U = unitary_from_hermitian(hermitian_from_wheights(wheights, dimension=DIMENSION))
+    weights = np.random.random(DIMENSION**2)
+    U = unitary_from_hermitian(hermitian_from_weights(weights, dimension=DIMENSION))
     feature_map = transform(inputs)
     base = qiskit.QuantumCircuit(DIMENSION)
     for index, state in enumerate(feature_map):
