@@ -30,10 +30,10 @@ def unitary_from_hermitian(hermitian):
 
 
 def hermitian_from_weights(weights, dimension):
-    diagonals = wheights[:dimension]
+    diagonals = weights[:dimension]
     dim = ((dimension**2 - dimension) // 2) + dimension
-    reals = wheights[dimension:dim]
-    imaginaries = wheights[dim:]
+    reals = weights[dimension:dim]
+    imaginaries = weights[dim:]
     assert reals.shape == imaginaries.shape
     H = np.matrix(np.diag(diagonals + 0j))
     H[np.triu_indices(dimension, 1)] = np.array(
