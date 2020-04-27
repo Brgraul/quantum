@@ -44,11 +44,14 @@ def hermitian_from_weights(weights, dimension):
 
 if __name__ == "__main__":
     inputs = np.random.random(DIMENSION)
-    weights = np.random.random(DIMENSION**2)
-    U = unitary_from_hermitian(hermitian_from_weights(weights, dimension=DIMENSION))
+    weights1 = np.random.random(DIMENSION**2)
+    weights2 = np.random.random(DIMENSION**2)
+    U1 = unitary_from_hermitian(hermitian_from_weights(weights1, dimension=DIMENSION))
+    U2 = unitary_from_hermitian(hermitian_from_weights(weights2, dimension=DIMENSION))
     feature_map = transform(inputs)
     base = qiskit.QuantumCircuit(DIMENSION)
     for index, state in enumerate(feature_map):
         base.initialize(state, index)
-    base.unitary_from_hermitian(U, base.qubits[0:2], 'U1')
+    base.unitary(U1, base.qubits[0:2], 'U1')
+    base.unitary(U2, base.qubits[2:], 'U2')
     print(base)
