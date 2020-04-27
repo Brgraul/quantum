@@ -1,9 +1,11 @@
-import qutip
-import qiskit
 import numpy as np
 from scipy.linalg import expm
 
-DIMENSION = 2
+import qiskit
+from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
+                                                      is_unitary_matrix)
+
+DIMENSION = 4
 
 
 def transform(x):
@@ -22,7 +24,9 @@ def tensor_dot(features):
 
 
 def unitary(hermitian):
-    return np.matrix(expm(1j * hermitian))
+    U = np.matrix(expm(1j * hermitian))
+    assert is_unitary_matrix(U)
+    return U
 
 
 def hermitian(wheights, dimension):
@@ -31,22 +35,20 @@ def hermitian(wheights, dimension):
     reals = wheights[dimension:dim]
     imaginaries = wheights[dim:]
     assert reals.shape == imaginaries.shape
-    H = np.diag(diagonals + 0j)
-    upper = np.array([complex(a, b) for a, b in zip(reals, imaginaries)])
-    lower = np.conj(upper)
-    ui = np.triu_indices(dimension, 1)
-    li = np.tril_indices(dimension, -1)
-    H[ui] = upper
-    H[li] = lower
+    H = np.matrix(np.diag(diagonals + 0j))
+    H[np.triu_indices(dimension, 1)] = np.array(
+        [complex(a, b) for a, b in zip(reals, imaginaries)])
+    H = H + H.H  # tril and triu don't use the same ordering!
+    assert is_hermitian_matrix(H)
     return H
+
 
 inputs = np.random.random(DIMENSION)
 wheights = np.random.random(DIMENSION**2)
 u = unitary(hermitian(wheights, dimension=DIMENSION))
-print(u)
 feature_map = transform(inputs)
 base = qiskit.QuantumCircuit(DIMENSION)
 for index, state in enumerate(feature_map):
     base.initialize(state, index)
-#base.unitary(u,(0,1), 'U1')
+base.unitary(u, base.qubits[0:2], 'U1')
 print(base)
