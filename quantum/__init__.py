@@ -23,13 +23,13 @@ def tensor_dot(features):
     return dot
 
 
-def unitary(hermitian):
+def unitary_from_hermitian(hermitian):
     U = np.matrix(expm(1j * hermitian))
     assert is_unitary_matrix(U)
     return U
 
 
-def hermitian(wheights, dimension):
+def hermitian_from_wheights(wheights, dimension):
     diagonals = wheights[:dimension]
     dim = ((dimension**2 - dimension) // 2) + dimension
     reals = wheights[dimension:dim]
@@ -45,10 +45,10 @@ def hermitian(wheights, dimension):
 
 inputs = np.random.random(DIMENSION)
 wheights = np.random.random(DIMENSION**2)
-u = unitary(hermitian(wheights, dimension=DIMENSION))
+U = unitary_from_hermitian(hermitian_from_wheights(wheights, dimension=DIMENSION))
 feature_map = transform(inputs)
 base = qiskit.QuantumCircuit(DIMENSION)
 for index, state in enumerate(feature_map):
     base.initialize(state, index)
-base.unitary(u, base.qubits[0:2], 'U1')
+base.unitary_from_hermitian(U, base.qubits[0:2], 'U1')
 print(base)
