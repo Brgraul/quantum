@@ -42,13 +42,13 @@ def hermitian_from_wheights(wheights, dimension):
     assert is_hermitian_matrix(H)
     return H
 
-
-inputs = np.random.random(DIMENSION)
-wheights = np.random.random(DIMENSION**2)
-U = unitary_from_hermitian(hermitian_from_wheights(wheights, dimension=DIMENSION))
-feature_map = transform(inputs)
-base = qiskit.QuantumCircuit(DIMENSION)
-for index, state in enumerate(feature_map):
-    base.initialize(state, index)
-base.unitary_from_hermitian(U, base.qubits[0:2], 'U1')
-print(base)
+if __name__ == "__main__":
+    inputs = np.random.random(DIMENSION)
+    wheights = np.random.random(DIMENSION**2)
+    U = unitary_from_hermitian(hermitian_from_wheights(wheights, dimension=DIMENSION))
+    feature_map = transform(inputs)
+    base = qiskit.QuantumCircuit(DIMENSION)
+    for index, state in enumerate(feature_map):
+        base.initialize(state, index)
+    base.unitary_from_hermitian(U, base.qubits[0:2], 'U1')
+    print(base)
