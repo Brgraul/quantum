@@ -51,8 +51,9 @@ if __name__ == "__main__":
     for i in range(DIMENSION - 1):
         weight = np.random.random(4**2)
         weights.append(weight)
-        unitaries.append(unitary_from_hermitian(
-        hermitian_from_weights(weight, dimension=4)))
+        unitaries.append(
+            unitary_from_hermitian(hermitian_from_weights(weight,
+                                                          dimension=4)))
 
     base = qiskit.QuantumCircuit(DIMENSION, 1)
     for index, state in enumerate(feature_map):
@@ -62,14 +63,14 @@ if __name__ == "__main__":
     for i in range(int(np.log2(DIMENSION))):
         steps = DIMENSION // (2**(i + 1))
         step_size = DIMENSION // steps
-        
+
         for j in range(steps):
             qubits = []
-            lower = step_size*j+2**i-1
-            upper = step_size*j+step_size
+            lower = step_size * j + 2**i - 1
+            upper = step_size * j + step_size
             qubits.append(base.qubits[lower])
-            qubits.append(base.qubits[upper-1])
+            qubits.append(base.qubits[upper - 1])
             base.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
-    base.measure([DIMENSION-1], [0])
+    base.measure([DIMENSION - 1], [0])
     print(base)
