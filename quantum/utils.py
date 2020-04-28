@@ -5,7 +5,7 @@ import qiskit
 from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
                                                       is_unitary_matrix)
 
-DIMENSION = 4
+DIMENSION = 8
 
 
 def transform(x):
@@ -42,16 +42,34 @@ def hermitian_from_weights(weights, dimension):
     assert is_hermitian_matrix(H)
     return H
 
+
 if __name__ == "__main__":
     inputs = np.random.random(DIMENSION)
-    weights1 = np.random.random(DIMENSION**2)
-    weights2 = np.random.random(DIMENSION**2)
-    U1 = unitary_from_hermitian(hermitian_from_weights(weights1, dimension=DIMENSION))
-    U2 = unitary_from_hermitian(hermitian_from_weights(weights2, dimension=DIMENSION))
     feature_map = transform(inputs)
-    base = qiskit.QuantumCircuit(DIMENSION)
+    weights = []
+    unitaries = []
+    for i in range(DIMENSION - 1):
+        weight = np.random.random(4**2)
+        weights.append(weight)
+        unitaries.append(unitary_from_hermitian(
+        hermitian_from_weights(weight, dimension=4)))
+
+    base = qiskit.QuantumCircuit(DIMENSION, 1)
     for index, state in enumerate(feature_map):
         base.initialize(state, index)
-    base.unitary(U1, base.qubits[0:2], 'U1')
-    base.unitary(U2, base.qubits[2:], 'U2')
+
+    index = 0
+    for i in range(int(np.log2(DIMENSION))):
+        steps = DIMENSION // (2**(i + 1))
+        step_size = DIMENSION // steps
+        
+        for j in range(steps):
+            qubits = []
+            lower = step_size*j+2**i-1
+            upper = step_size*j+step_size
+            qubits.append(base.qubits[lower])
+            qubits.append(base.qubits[upper-1])
+            base.unitary(unitaries[index], qubits, f'U({i},{j})')
+            index += 1
+    base.measure([DIMENSION-1], [0])
     print(base)
