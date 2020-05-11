@@ -16,13 +16,6 @@ def transform(x):
     return feature_map
 
 
-def tensor_dot(features):
-    dot = 1
-    for entry in features:
-        dot = np.tensordot(dot, entry, axes=0)
-    return dot
-
-
 def unitary_from_hermitian(hermitian):
     U = np.matrix(expm(1j * hermitian))
     assert is_unitary_matrix(U)
