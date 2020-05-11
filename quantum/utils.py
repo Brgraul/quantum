@@ -2,10 +2,11 @@ import numpy as np
 from scipy.linalg import expm
 
 import qiskit
+from qiskit import Aer
 from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
                                                       is_unitary_matrix)
 
-DIMENSION = 8
+BACKEND = Aer.get_backend('statevector_simulator')
 
 
 def transform(x):
@@ -36,26 +37,33 @@ def hermitian_from_weights(weights, dimension):
     return H
 
 
-if __name__ == "__main__":
-    inputs = np.random.random(DIMENSION)
-    feature_map = transform(inputs)
+def init_wheights(dimension):
     weights = []
     unitaries = []
-    for i in range(DIMENSION - 1):
-        weight = np.random.random(4**2)
+    for i in range(dimension - 1):
+        weight = np.random.random(4**2)  #TODO check init of wheights
         weights.append(weight)
         unitaries.append(
             unitary_from_hermitian(hermitian_from_weights(weight,
                                                           dimension=4)))
+    return weights, unitaries
 
-    base = qiskit.QuantumCircuit(DIMENSION, 1)
-    for index, state in enumerate(feature_map):
+
+def run_circuit(image, unitaries):
+    dimension = image.shape[0] * image.shape[1]
+    features = transform(image)
+
+    classic_circuit = qiskit.ClassicalRegister(0)
+    quantum_circuit = qiskit.QuantumRegister(dimension)
+
+    base = qiskit.QuantumCircuit(quantum_circuit, classic_circuit)
+    for index, state in enumerate(features):
         base.initialize(state, index)
 
     index = 0
-    for i in range(int(np.log2(DIMENSION))):
-        steps = DIMENSION // (2**(i + 1))
-        step_size = DIMENSION // steps
+    for i in range(int(np.log2(dimension))):
+        steps = dimension // (2**(i + 1))
+        step_size = dimension // steps
 
         for j in range(steps):
             qubits = []
@@ -65,5 +73,6 @@ if __name__ == "__main__":
             qubits.append(base.qubits[upper - 1])
             base.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
-    base.measure([DIMENSION - 1], [0])
-    print(base)
+    base.measure([dimension - 1], [0])
+    result = qiskit.execute(base, BACKEND).result()
+    return result
