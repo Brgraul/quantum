@@ -24,6 +24,7 @@ def generate_dataset(size=4,
 
     x_train_sized = tf.image.resize(x_train, (size, size)).numpy()
     x_test_small = tf.image.resize(x_test, (size, size)).numpy()
+    return (x_train, y_train), (x_test, y_test)
 
 
 def filter_dataset(x_data, y_data, value_true, value_false):
