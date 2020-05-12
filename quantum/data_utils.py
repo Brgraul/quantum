@@ -22,9 +22,9 @@ def generate_dataset(size=4,
         x_train, y_train = filter_contradicting(x_train, y_train)
         x_test, y_test = filter_contradicting(x_test, y_test)
 
-    x_train_sized = tf.image.resize(x_train, (size, size)).numpy()
-    x_test_small = tf.image.resize(x_test, (size, size)).numpy()
-    return (x_train, y_train), (x_test, y_test)
+    x_train_resized = tf.image.resize(x_train, (size, size)).numpy()
+    x_test_resized = tf.image.resize(x_test, (size, size)).numpy()
+    return (x_train_resized, y_train), (x_test_resized, y_test)
 
 
 def filter_dataset(x_data, y_data, value_true, value_false):
