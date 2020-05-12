@@ -1,8 +1,8 @@
-"""This module provides the neural network part of the implementation"""
+"""This module provides the neural network part of the implementation."""
 import numpy as np
 
 from quantum.data_utils import generate_dataset
-from quantum.utils import run_circuit
+from quantum.quantum_utils import run_circuit
 
 DIMENSION = 4
 
