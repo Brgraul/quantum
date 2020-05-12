@@ -77,4 +77,4 @@ def run_circuit(image,
     if draw:
         print(base_circiut)
     result = qiskit.execute(base_circiut, backend).result()
-    return result
+    return result.get_counts()
