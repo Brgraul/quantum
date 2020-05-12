@@ -44,9 +44,10 @@ def unitaries_from_weights(weights):
     return unitaries
 
 
-def run_circuit(image, unitaries, backend=Aer.get_backend('qasm_simulator')):
-    dimension = image.shape[0] * image.shape[1]
+def run_circuit(image, weights, backend=Aer.get_backend('qasm_simulator')):
+    dimension = len(image)
     features = transform(image)
+    unitaries = unitaries_from_weights(weights)
 
     classic_circuit = qiskit.ClassicalRegister(1)
     quantum_circuit = qiskit.QuantumRegister(dimension)
