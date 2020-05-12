@@ -35,7 +35,7 @@ def hermitian_from_weights(weights, dimension):
     return H
 
 
-def unitaries(weights):
+def unitaries_from_weights(weights):
     unitaries = []
     for weight in weights:
         unitaries.append(

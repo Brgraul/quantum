@@ -1,7 +1,7 @@
 import numpy as np
 
 from data_utils import generate_dataset
-from utils import transform, unitaries
+from utils import run_circuit
 
 DIMENSION = 4
 
@@ -19,5 +19,4 @@ if __name__ == "__main__":
     image = x_train[0].flatten()
     features = transform(image)
     weights = init_weights(DIMENSION**2)
-    unitaries_ = unitaries(weights)
-    print(features, weights[0], unitaries_[0])
+    run_circuit(image, weights)
