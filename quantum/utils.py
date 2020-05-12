@@ -6,7 +6,7 @@ from qiskit import Aer
 from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
                                                       is_unitary_matrix)
 
-BACKEND = Aer.get_backend('statevector_simulator')
+BACKEND = Aer.get_backend('quasm_simulator')
 
 
 def transform(x):
@@ -53,7 +53,7 @@ def run_circuit(image, unitaries):
     dimension = image.shape[0] * image.shape[1]
     features = transform(image)
 
-    classic_circuit = qiskit.ClassicalRegister(0)
+    classic_circuit = qiskit.ClassicalRegister(1)
     quantum_circuit = qiskit.QuantumRegister(dimension)
 
     base = qiskit.QuantumCircuit(quantum_circuit, classic_circuit)
