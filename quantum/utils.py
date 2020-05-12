@@ -6,8 +6,6 @@ from qiskit import Aer
 from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
                                                       is_unitary_matrix)
 
-BACKEND = Aer.get_backend('quasm_simulator')
-
 
 def transform(x):
     feature_map = np.zeros((x.shape[0], 2))
@@ -49,7 +47,7 @@ def init_wheights(dimension):
     return weights, unitaries
 
 
-def run_circuit(image, unitaries):
+def run_circuit(image, unitaries, backend=Aer.get_backend('qasm_simulator')):
     dimension = image.shape[0] * image.shape[1]
     features = transform(image)
 
@@ -74,5 +72,5 @@ def run_circuit(image, unitaries):
             base.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
     base.measure([dimension - 1], [0])
-    result = qiskit.execute(base, BACKEND).result()
+    result = qiskit.execute(base, backend).result()
     return result
