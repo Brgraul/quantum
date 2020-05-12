@@ -44,17 +44,20 @@ def unitaries_from_weights(weights):
     return unitaries
 
 
-def run_circuit(image, weights, backend=Aer.get_backend('qasm_simulator')):
+def run_circuit(image,
+                weights,
+                backend=Aer.get_backend('qasm_simulator'),
+                draw=False):
     dimension = len(image)
     features = transform(image)
     unitaries = unitaries_from_weights(weights)
 
     classic_circuit = qiskit.ClassicalRegister(1)
     quantum_circuit = qiskit.QuantumRegister(dimension)
+    base_circiut = qiskit.QuantumCircuit(quantum_circuit, classic_circuit)
 
-    base = qiskit.QuantumCircuit(quantum_circuit, classic_circuit)
     for index, state in enumerate(features):
-        base.initialize(state, index)
+        base_circiut.initialize(state, index)
 
     index = 0
     for i in range(int(np.log2(dimension))):
@@ -65,10 +68,13 @@ def run_circuit(image, weights, backend=Aer.get_backend('qasm_simulator')):
             qubits = []
             lower = step_size * j + 2**i - 1
             upper = step_size * j + step_size
-            qubits.append(base.qubits[lower])
-            qubits.append(base.qubits[upper - 1])
-            base.unitary(unitaries[index], qubits, f'U({i},{j})')
+            qubits.append(base_circiut.qubits[lower])
+            qubits.append(base_circiut.qubits[upper - 1])
+            base_circiut.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
-    base.measure([dimension - 1], [0])
-    result = qiskit.execute(base, backend).result()
+    base_circiut.measure([dimension - 1], [0])
+
+    if draw:
+        print(base_circiut)
+    result = qiskit.execute(base_circiut, backend).result()
     return result
