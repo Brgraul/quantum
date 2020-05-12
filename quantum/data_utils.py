@@ -1,3 +1,4 @@
+"""This module provides utility for dataset management."""
 import collections
 
 import numpy as np
@@ -9,16 +10,29 @@ def generate_dataset(size=4,
                      filter_values=False,
                      value_true=3,
                      value_false=6):
+    """Generates a customized MNIST dataset.
+
+    Args:
+        size: The dimension of resized images size x size.
+        filter_contradicting: Switch to filter contradicting samples.
+        filter_values: Switch to filter values.
+        value_true: The number to for True labels.
+        value_false: The number to for False labels.
+
+    Returns:
+        (x_train_resized, y_train): The training data.
+        (x_test_resized, y_test): The testing data.
+    """
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     x_train, x_test = x_train[...,
                               np.newaxis] / 255.0, x_test[...,
                                                           np.newaxis] / 255.0
-    if (filter_values):
+    if filter_values:
         x_train, y_train = filter_dataset(x_train, y_train, value_true,
                                           value_false)
         x_test, y_test = filter_dataset(x_test, y_test, value_true,
                                         value_false)
-    if (filter_contradicting):
+    if filter_contradicting:
         x_train, y_train = filter_contradicting(x_train, y_train)
         x_test, y_test = filter_contradicting(x_test, y_test)
 
@@ -28,6 +42,18 @@ def generate_dataset(size=4,
 
 
 def filter_dataset(x_data, y_data, value_true, value_false):
+    """Filters examples from MNIST data to binary decision.
+
+    Args:
+        x_data: An array of ground trouth data.
+        y_data: The array of labels.
+        value_true: The number to for True labels.
+        value_false: The number to for False labels.
+
+    Returns:
+        x_data: The filtered ground trouth array.
+        y_data: The filtered labels.
+    """
     keep = (y_data == value_true) | (y_data == value_false)
     x_data, y_data = x_data[keep], y_data[keep]
     y_data = y_data == value_true
@@ -35,16 +61,26 @@ def filter_dataset(x_data, y_data, value_true, value_false):
 
 
 def remove_contradicting(x_data, y_data):
+    """Removes contradicting examples from labeled data.
+
+    Args:
+        x_data: An array of ground trouth data.
+        y_data: The array of labels
+
+    Returns:
+        new_x: The new ground trouth array.
+        new_y: The new labels.
+    """
     mapping = collections.defaultdict(set)
-    for x, y in zip(x_data, y_data):
-        mapping[tuple(x.flatten())].add(y)
+    for datapoint, label in zip(x_data, y_data):
+        mapping[tuple(datapoint.flatten())].add(label)
 
     new_x = []
     new_y = []
-    for x, y in zip(x_data, y_data):
-        labels = mapping[tuple(x.flatten())]
+    for datapoint, label in zip(x_data, y_data):
+        labels = mapping[tuple(datapoint.flatten())]
         if len(labels) == 1:
-            new_x.append(x)
+            new_x.append(datapoint)
             new_y.append(list(labels)[0])
         else:
             pass
