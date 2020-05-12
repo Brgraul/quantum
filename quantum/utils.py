@@ -35,16 +35,13 @@ def hermitian_from_weights(weights, dimension):
     return H
 
 
-def init_wheights(dimension):
-    weights = []
+def unitaries(weights):
     unitaries = []
-    for i in range(dimension - 1):
-        weight = np.random.random(4**2)  #TODO check init of wheights
-        weights.append(weight)
+    for weight in weights:
         unitaries.append(
             unitary_from_hermitian(hermitian_from_weights(weight,
                                                           dimension=4)))
-    return weights, unitaries
+    return unitaries
 
 
 def run_circuit(image, unitaries, backend=Aer.get_backend('qasm_simulator')):
