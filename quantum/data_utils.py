@@ -85,3 +85,27 @@ def remove_contradicting(x_data, y_data):
         else:
             pass
     return np.array(new_x), np.array(new_y)
+
+
+def iterate_minibatches(x_data, y_data, batchsize, shuffle=False):
+    """Iterator for minibatches from stackoverflow.
+
+    Args:
+        x_data: An array of ground trouth data.
+        y_data: The array of labels
+        batchsize: The desired batchsize.
+        shuffle: Switch for shuffeling batches.
+
+    Yields:
+        A minibatch of the desired size.
+    """
+    if shuffle:
+        indices = np.arange(x_data.shape[0])
+        np.random.shuffle(indices)
+    for start_idx in range(0, x_data.shape[0], batchsize):
+        end_idx = min(start_idx + batchsize, x_data.shape[0])
+        if shuffle:
+            excerpt = indices[start_idx:end_idx]
+        else:
+            excerpt = slice(start_idx, end_idx)
+        yield x_data[excerpt], y_data[excerpt]
