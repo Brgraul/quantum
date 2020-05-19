@@ -32,22 +32,31 @@ def loss(prediction, label, lambda_=0.234, eta=5.59):
     return max(p_max_not - p_label + lambda_, 0)**eta
 
 
-def batch_loss(batch):
+def batch_loss(batch, weights):
     loss_ = 0
     x_batch, y_batch = batch
     for image, label in zip(x_batch, y_batch):
-        prediction = run_circuit(image.flatten(), WEIGHTS)
+        #prediction = run_circuit(image.flatten(), weights)
+        prediction = {'0': 500, '1': 524}
         loss_ += loss(prediction, label)
     return loss_ / len(batch[0])
 
 
-def train_epochs(x_train, y_train, batchsize=222, epochs=30):
+def train_epochs(x_train, y_train, batchsize=222, epochs=30, a=0, b=0, A=0, s=0, t=0, gamma=0):
 
+    v = np.zeros(WEIGHTS.shape)
     for epoch in range(epochs):
+        alpha_k = a / (epoch+1+A)**s
+        beta_k = b / (epoch+1)**t
         for batch in iterate_minibatches(x_train, y_train, batchsize):
-            b_loss = batch_loss(batch)
-            #TODO update step
-
+            pertubation = np.random.uniform(-1,1,WEIGHTS.shape[0])
+            weights_1 = WEIGHTS + alpha_k * pertubation
+            weights_2 = WEIGHTS - alpha_k * pertubation
+            b_loss1 = batch_loss(batch, weights_1)
+            b_loss2 = batch_loss(batch, weights_2)
+            g = (b_loss1 - b_loss2) / (2* alpha_k)
+            v = gamma*v + g*beta_k*pertubation
+            WEIGHTS += v
 
 if __name__ == "__main__":
     (X_TRAIN, Y_TRAIN), (X_TEST, Y_TEST) = generate_dataset(DIMENSION,
