@@ -47,8 +47,8 @@ def filter_dataset(x_data, y_data, value_true, value_false):
     Args:
         x_data: An array of ground trouth data.
         y_data: The array of labels.
-        value_true: The number to for True labels.
-        value_false: The number to for False labels.
+        value_true: The number for True labels.
+        value_false: The number for False labels.
 
     Returns:
         x_data: The filtered ground trouth array.
@@ -56,7 +56,7 @@ def filter_dataset(x_data, y_data, value_true, value_false):
     """
     keep = (y_data == value_true) | (y_data == value_false)
     x_data, y_data = x_data[keep], y_data[keep]
-    y_data = y_data == value_true
+    # y_data = y_data == value_true
     return x_data, y_data
 
 
