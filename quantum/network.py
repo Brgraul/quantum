@@ -10,8 +10,7 @@ import operator
 import matplotlib.pyplot as plt
 import numpy as np
 
-from quantum.data_utils import generate_dataset, iterate_minibatches
-from quantum.quantum_utils import run_circuit
+from quantum.utils import data_utils, quantum_utils
 
 LABELS = {4: '1', 9: '0'}
 
@@ -20,7 +19,6 @@ class QuantumNetwork:
     """
     Class representing a Quantum Network.
     """
-
 
     def __init__(self, dimension, runs=1024, unitary_dim=4):
         """Initializes the networ parameters. Hyperparameters are set to zero.
@@ -109,9 +107,9 @@ class QuantumNetwork:
         loss = 0
         x_batch, y_batch = batch
         for image, label in zip(x_batch, y_batch):
-            prediction = run_circuit(image.flatten(), weights_)
-            #test = np.random.uniform(0,1024)
-            #prediction = {'0': 1024-test, '1': test}
+            prediction = quantum_utils.run_circuit(image.flatten(), weights_)
+            #test = np.random.uniform(0, 1024)
+            #prediction = {'0': 1024 - test, '1': test}
             loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
@@ -130,10 +128,10 @@ class QuantumNetwork:
             self.correct = 0
             alpha_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
             beta_k = self.spsa_b / (epoch + 1)**self.spsa_t
-            for batch in iterate_minibatches(x_train,
-                                             y_train,
-                                             batchsize,
-                                             shuffle=True):
+            for batch in data_utils.iterate_minibatches(x_train,
+                                                        y_train,
+                                                        batchsize,
+                                                        shuffle=True):
                 pertubation = np.random.uniform(-1, 1, self.weights.shape)
                 weights_1 = self.weights + alpha_k * pertubation
                 weights_2 = self.weights - alpha_k * pertubation
@@ -155,7 +153,7 @@ class QuantumNetwork:
             prediction_label: The label according to the LABELS dict.
         """
         image = image.flatten()
-        prediction = run_circuit(image, self.weights)
+        prediction = quantum_utils.run_circuit(image, self.weights)
         prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
         return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
 
@@ -177,10 +175,12 @@ class QuantumNetwork:
 
 if __name__ == "__main__":
     DIMENSION = 4
-    (X_TRAIN, Y_TRAIN), (X_TEST, Y_TEST) = generate_dataset(DIMENSION,
-                                                            filter_values=True,
-                                                            value_true=4,
-                                                            value_false=9)
+    (X_TRAIN,
+     Y_TRAIN), (X_TEST,
+                Y_TEST) = data_utils.generate_dataset(DIMENSION,
+                                                      filter_values=True,
+                                                      value_true=4,
+                                                      value_false=9)
     NETWORK = QuantumNetwork(DIMENSION)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
