@@ -93,7 +93,8 @@ def unitaries_from_weights(weights):
 def run_circuit(image,
                 weights,
                 backend=Aer.get_backend('qasm_simulator'),
-                draw=False):
+                draw=False,
+                runs=1024):
     """Executes a quantum circiut on the image using the weights for unitary
         operators.
 
@@ -102,6 +103,7 @@ def run_circuit(image,
         weights: List of weights for unitaries.
         backend: Simulation backend.
         draw (bool): Draw the circuit.
+        runs (int): Simulation runs.
 
     Returns:
         counts: The simulated measurement counts.
@@ -132,5 +134,6 @@ def run_circuit(image,
 
     if draw:
         print(base_circiut)
-    counts = qiskit.execute(base_circiut, backend).result().get_counts()
+    counts = qiskit.execute(base_circiut, backend,
+                            shots=runs).result().get_counts()
     return counts
