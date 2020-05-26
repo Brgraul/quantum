@@ -32,7 +32,7 @@ class QuantumNetwork:
         self.A = A
         self.s = s
         self.t = t
-        self.gamma = 0
+        self.gamma = gamma
         self.eta = eta
         self.lambda_ = lambda_
 
