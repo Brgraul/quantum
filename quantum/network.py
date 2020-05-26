@@ -17,7 +17,7 @@ class QuantumNetwork:
         self.losses = []
         self.qubits = dimension**2
         self.runs = runs
-        self.weights = np.random.normal(size=(self.qubits,unitary_dim**2))
+        self.weights = np.random.normal(size=(self.qubits, unitary_dim**2))
 
     def set_spsa_hyperparameters(self,
                                  a=28.0,
@@ -37,21 +37,22 @@ class QuantumNetwork:
         self.eta = eta
         self.lambda_ = lambda_
 
-    def spsa_loss(self, prediction, label):
+    def spsa_loss(self, prediction, label, track=False):
         p_max = max(prediction.values()) / self.runs
         p_label = prediction.pop(LABELS[label], None) / self.runs
-        if (p_max == p_label):
+        if (p_max == p_label and track):
             self.correct += 1
         p_max_not = max(prediction.values()) / self.runs
         return max(p_max_not - p_label + self.lambda_, 0)**self.eta
 
-    def spsa_batch_loss(self, batch, weights_):
+    def spsa_batch_loss(self, batch, weights_, track=False):
         loss = 0
         x_batch, y_batch = batch
         for image, label in zip(x_batch, y_batch):
-            #prediction = run_circuit(image.flatten(), weights_)
-            prediction = {'0': 500, '1': 524}
-            loss += self.spsa_loss(prediction, label)
+            prediction = run_circuit(image.flatten(), weights_)
+            #test = np.random.uniform(0,1024)
+            #prediction = {'0': 1024-test, '1': test}
+            loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
     def train_epochs(self, x_train, y_train, batchsize=222, epochs=30):
@@ -67,13 +68,13 @@ class QuantumNetwork:
                 pertubation = np.random.uniform(-1, 1, self.weights.shape)
                 weights_1 = self.weights + alpha_k * pertubation
                 weights_2 = self.weights - alpha_k * pertubation
-                b_loss1 = self.spsa_batch_loss(batch, weights_1)
+                b_loss1 = self.spsa_batch_loss(batch, weights_1, True)
                 b_loss2 = self.spsa_batch_loss(batch, weights_2)
                 g = (b_loss1 - b_loss2) / (2 * alpha_k)
-                self.losses.append(g)
+                self.losses.append(b_loss1)
                 v = self.gamma * v - g * beta_k * pertubation
                 self.weights += v
-            self.accuracies.append(self.correct/x_train.shape[0])
+            self.accuracies.append(self.correct / x_train.shape[0])
 
     def predict(self, image):
         image = image.flatten()
@@ -82,12 +83,12 @@ class QuantumNetwork:
         return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
 
     def print_stats(self):
-        plt.subplot(2,1,1)
+        plt.subplot(2, 1, 1)
         plt.plot(self.accuracies)
         plt.title('Network Stats')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
-        plt.subplot(2,1,2)
+        plt.subplot(2, 1, 2)
         plt.plot(self.losses)
         plt.xlabel('Batches')
         plt.ylabel('Loss')
@@ -102,7 +103,7 @@ if __name__ == "__main__":
                                                             value_false=9)
     network = QuantumNetwork(DIMENSION)
     network.set_spsa_hyperparameters()
-    network.train_epochs(X_TRAIN, Y_TRAIN)
-    #example = network.predict(X_TEST[0])
-    #print(f'Prediction: {example}, Actual: {Y_TEST[0]}')
+    network.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
+    example = network.predict(X_TEST[0])
+    print(f'Prediction: {example}, Actual: {Y_TEST[0]}')
     network.print_stats()
