@@ -1,9 +1,10 @@
 """This module provides the neural network part of the implementation."""
+import operator
+
 import numpy as np
 
 from quantum.data_utils import generate_dataset, iterate_minibatches
 from quantum.quantum_utils import run_circuit
-
 
 LABELS = {4: '1', 9: '0'}
 
@@ -68,6 +69,12 @@ class QuantumNetwork:
                 v = self.gamma * v - g * beta_k * self.pertubation
                 self.weights += v
 
+    def predict(self, image):
+        image = image.flatten
+        prediction = run_circuit(image, self.weights)
+        prediciton = max(prediciton.items(), key=operator.itemgetter(1))[0]
+        return LABELS.keys()[LABELS.values().index(prediciton)]
+
 
 if __name__ == "__main__":
     DIMENSION = 4
@@ -78,3 +85,5 @@ if __name__ == "__main__":
     network = QuantumNetwork(DIMENSION)
     network.set_spsa_hyperparameters()
     network.train_epochs(X_TRAIN, Y_TRAIN)
+    example = network.predict(X_TEST[0])
+    print(f'Prediction: {example}, Actual: {Y_TEST[0]}')
