@@ -1,4 +1,10 @@
-"""This module provides the neural network part of the implementation."""
+"""This module provides the neural network part of the implementation.
+    Todos:
+        * TODO: Hyperparameter tuning
+        * TODO: Save weights.
+        * TODO: Check Metrics
+        * TODO: Test Network.
+"""
 import operator
 
 import matplotlib.pyplot as plt
