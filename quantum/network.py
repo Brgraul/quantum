@@ -70,10 +70,10 @@ class QuantumNetwork:
                 self.weights += v
 
     def predict(self, image):
-        image = image.flatten
+        image = image.flatten()
         prediction = run_circuit(image, self.weights)
-        prediciton = max(prediciton.items(), key=operator.itemgetter(1))[0]
-        return LABELS.keys()[LABELS.values().index(prediciton)]
+        prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
+        return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
 
 
 if __name__ == "__main__":
