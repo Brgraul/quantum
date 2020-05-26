@@ -13,10 +13,7 @@ class QuantumNetwork:
     def __init__(self, dimension, runs=1024, unitary_dim=4):
         self.qubits = dimension**2
         self.runs = runs
-        self.weights = []
-        for _ in range(self.qubits - 1):
-            weight = np.random.normal(size=unitary_dim**2)
-            self.weights.append(weight)
+        self.weights = np.random.normal(size=(self.qubits,unitary_dim**2))
 
     def set_spsa_hyperparameters(self,
                                  a=28.0,
@@ -54,7 +51,7 @@ class QuantumNetwork:
     def train_epochs(self, x_train, y_train, batchsize=222, epochs=30):
         v = np.zeros(self.weights.shape)
         for epoch in range(epochs):
-            alpha_k = self.a / (epoch + 1 + A)**self.s
+            alpha_k = self.a / (epoch + 1 + self.A)**self.s
             beta_k = self.b / (epoch + 1)**self.t
             for batch in iterate_minibatches(x_train,
                                              y_train,
@@ -66,7 +63,7 @@ class QuantumNetwork:
                 b_loss1 = self.spsa_batch_loss(batch, weights_1)
                 b_loss2 = self.spsa_batch_loss(batch, weights_2)
                 g = (b_loss1 - b_loss2) / (2 * alpha_k)
-                v = self.gamma * v - g * beta_k * self.pertubation
+                v = self.gamma * v - g * beta_k * pertubation
                 self.weights += v
 
     def predict(self, image):
