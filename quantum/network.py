@@ -4,8 +4,10 @@
         * TODO: Save weights.
         * TODO: Check Metrics
         * TODO: Test Network.
+        * TODO: Parallelize code?
 """
 import operator
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -126,12 +128,16 @@ class QuantumNetwork:
         spsa_v = np.zeros(self.weights.shape)
         for epoch in range(epochs):
             self.correct = 0
+            print(f'Epoch {epoch+1} out of {epochs}')
+            count = 0
             alpha_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
             beta_k = self.spsa_b / (epoch + 1)**self.spsa_t
             for batch in data_utils.iterate_minibatches(x_train,
                                                         y_train,
                                                         batchsize,
                                                         shuffle=True):
+                start = time.time()
+                count += 1
                 pertubation = np.random.uniform(-1, 1, self.weights.shape)
                 weights_1 = self.weights + alpha_k * pertubation
                 weights_2 = self.weights - alpha_k * pertubation
@@ -141,6 +147,8 @@ class QuantumNetwork:
                 self.losses.append(b_loss1)
                 spsa_v = self.spsa_gamma * spsa_v - spsa_g * beta_k * pertubation
                 self.weights += spsa_v
+                end = time.time()
+                print(f'Completed Batch {count} out of {x_train.shape[0]//batchsize} in {end-start} seconds')
             self.accuracies.append(self.correct / x_train.shape[0])
 
     def predict(self, image):
