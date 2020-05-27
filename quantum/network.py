@@ -1,11 +1,10 @@
 """This module provides the neural network part of the implementation.
     Todos:
         * TODO: Hyperparameter tuning
-        * TODO: Save weights.
         * TODO: Check Metrics
-        * TODO: Test Network.
 """
 import operator
+import pickle
 import time
 from multiprocessing import Pool
 
@@ -109,10 +108,12 @@ class QuantumNetwork:
         x_batch, y_batch = batch
         weights_ = self.weights + pertubation
         for image, label in zip(x_batch, y_batch):
-            prediction = quantum_utils.run_circuit(image.flatten(), weights_)
-            #test = np.random.uniform(0, 1024)
-            #prediction = {'0': 1024 - test, '1': test}
-            loss += self.spsa_loss(prediction, label, track)
+            prediction = quantum_utils.run_circuit(image.flatten(),
+                                                   weights_,
+                                                   runs=self.runs)
+            # test = np.random.uniform(0, 256)
+            # prediction = {'0': 256 - test, '1': test}
+            # loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
     def train_epochs(self, x_train, y_train, batchsize=222, epochs=30):
@@ -150,7 +151,7 @@ class QuantumNetwork:
                     self.weights += spsa_v
                     end = time.time()
                     print(
-                        f'Completed Batch {count} out of {x_train.shape[0]//batchsize} in {end-start} seconds'
+                        f'Completed Batch {count} out of {x_train.shape[0]//batchsize +1} in {end-start} seconds'
                     )
                 self.accuracies.append(self.correct / x_train.shape[0])
 
@@ -164,7 +165,9 @@ class QuantumNetwork:
             prediction_label: The label according to the LABELS dict.
         """
         image = image.flatten()
-        prediction = quantum_utils.run_circuit(image, self.weights)
+        prediction = quantum_utils.run_circuit(image,
+                                               self.weights,
+                                               runs=self.runs)
         prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
         return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
 
@@ -194,7 +197,7 @@ class QuantumNetwork:
         return model
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     DIMENSION = 4
     (X_TRAIN,
      Y_TRAIN), (X_TEST,
@@ -205,6 +208,9 @@ if __name__ == "__main__":
     NETWORK = QuantumNetwork(DIMENSION, runs=256)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=1)
-    EXAMPLE = NETWORK.predict(X_TEST[0])
-    print(f'Prediction: {EXAMPLE}, Actual: {Y_TEST[0]}')
+    test_count = 0
+    for sample, label in zip(X_TEST, Y_TEST):
+        if (NETWORK.predict(sample) == label):
+            test_count += 1
+    print(f'Test Accuracy: {test_count/X_TRAIN.shape[0]}')
     NETWORK.print_stats()
