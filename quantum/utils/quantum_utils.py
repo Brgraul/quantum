@@ -9,7 +9,7 @@ from qiskit.quantum_info.operators.predicates import (is_hermitian_matrix,
 
 
 def transform(input_):
-    """Transforms a 1-dimensional array into a 2-dimensianl feature array.
+    """Transforms a 1-dimensional array into a 2-dimensional feature array.
         The transformation is done by [cos(pi/2*x), sin(pi/2*x)]
 
     Args:
@@ -73,7 +73,7 @@ def hermitian_from_weights(weights, dimension):
     return hermitian
 
 
-def unitaries_from_weights(weights):
+def unitaries_from_weights(weights, dimension=4):
     """Wrapper function to generate unitary matricies from weight list.
 
     Args:
@@ -85,8 +85,7 @@ def unitaries_from_weights(weights):
     unitaries = []
     for weight in weights:
         unitaries.append(
-            unitary_from_hermitian(hermitian_from_weights(weight,
-                                                          dimension=4)))
+            unitary_from_hermitian(hermitian_from_weights(weight, dimension)))
     return unitaries
 
 
@@ -131,6 +130,46 @@ def run_circuit(image,
             base_circiut.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
     base_circiut.measure([dimension - 1], [0])
+
+    if draw:
+        print(base_circiut)
+    counts = qiskit.execute(base_circiut, backend,
+                            shots=runs).result().get_counts()
+    return counts
+
+
+def run_efficient_circuit(image,
+                          weights,
+                          backend=Aer.get_backend('qasm_simulator'),
+                          draw=False,
+                          runs=1024):
+    """Executes an efficient quantum circiut on the image using the weights for 
+        unitary operators.
+
+    Args:
+        image: The flat input image.
+        weights: List of weights for unitaries.
+        backend: Simulation backend.
+        draw (bool): Draw the circuit.
+        runs (int): Simulation runs.
+
+    Returns:
+        counts: The simulated measurement counts.
+    """
+    features = transform(image)
+    unitaries = unitaries_from_weights(weights, 16)
+
+    base_circiut = qiskit.QuantumCircuit(4, 1)
+    for index in range(4):
+        base_circiut.initialize(features[index], index)
+    base_circiut.unitary(unitaries[0], base_circiut.qubits[0:4], 'U1')
+
+    for index, state in enumerate(features[4:]):
+        base_circiut.reset(3)
+        base_circiut.initialize(state, 3)
+        base_circiut.unitary(unitaries[index + 1], base_circiut.qubits[0:4],
+                             f'U{index+2}')
+    base_circiut.measure([0], [0])
 
     if draw:
         print(base_circiut)
