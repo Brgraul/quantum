@@ -40,7 +40,7 @@ class QuantumNetwork:
         if efficient:
             unitary_dim = 16
             self.qubits = 4
-            self.weights = np.random.random(size=(dimension**2 - 3,
+            self.weights = np.random.normal(size=(dimension**2 - 3,
                                                   unitary_dim**2))
         else:
             self.qubits = dimension**2
@@ -178,9 +178,14 @@ class QuantumNetwork:
             prediction_label: The label according to the LABELS dict.
         """
         image = image.flatten()
-        prediction = quantum_utils.run_circuit(image,
-                                               self.weights,
-                                               runs=self.runs)
+        if self.efficient:
+            prediction = quantum_utils.run_efficient_circuit(image,
+                                                             self.weights,
+                                                             runs=self.runs)
+        else:
+            prediction = quantum_utils.run_circuit(image,
+                                                   self.weights,
+                                                   runs=self.runs)
         prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
         return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
 
@@ -220,10 +225,11 @@ if __name__ == '__main__':
                                                       value_false=9)
     NETWORK = QuantumNetwork(DIMENSION, runs=256)
     NETWORK.set_spsa_hyperparameters()
-    NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=1)
-    test_count = 0
-    for sample, label in zip(X_TEST, Y_TEST):
-        if (NETWORK.predict(sample) == label):
-            test_count += 1
-    print(f'Test Accuracy: {test_count/X_TRAIN.shape[0]}')
+    NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
+    # test_count = 0
+    # for sample, label in zip(X_TEST, Y_TEST):
+    #     if (NETWORK.predict(sample) == label):
+    #         test_count += 1
+    # print(f'Test Accuracy: {test_count/X_TRAIN.shape[0]}')
     NETWORK.print_stats()
+    NETWORK.predict(X_TEST[0])
