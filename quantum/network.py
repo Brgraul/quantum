@@ -2,6 +2,7 @@
     Todos:
         * TODO: Hyperparameter tuning
         * TODO: Check Metrics
+        * TODO: check matrix generation
 """
 import operator
 import pickle
@@ -20,7 +21,7 @@ class QuantumNetwork:
     """
     Class representing a Quantum Network.
     """
-    def __init__(self, dimension, runs=1024, unitary_dim=4):
+    def __init__(self, dimension, runs=1024, unitary_dim=4, efficient=True):
         """Initializes the networ parameters. Hyperparameters are set to zero.
             Weights are initialized randomly.
 
@@ -29,13 +30,21 @@ class QuantumNetwork:
             runs (int): Parameter for the circuit evaluation.
             unitary_dim (int): Dimensionality of unitaries: 4x4 -> 2 Qubits
                                                             8x8 -> 4 Qubits
+            efficient (bool): Switch to use the efficient layout.
         """
         self.accuracies = []
         self.correct = 0
         self.losses = []
-        self.qubits = dimension**2
+        self.efficient = efficient
         self.runs = runs
-        self.weights = np.random.normal(size=(self.qubits, unitary_dim**2))
+        if efficient:
+            unitary_dim = 16
+            self.qubits = 4
+            self.weights = np.random.random(size=(dimension**2 - 3,
+                                                  unitary_dim**2))
+        else:
+            self.qubits = dimension**2
+            self.weights = np.random.normal(size=(self.qubits, unitary_dim**2))
 
         #spsa
         self.spsa_a = 0
@@ -108,9 +117,13 @@ class QuantumNetwork:
         x_batch, y_batch = batch
         weights_ = self.weights + pertubation
         for image, label in zip(x_batch, y_batch):
-            prediction = quantum_utils.run_circuit(image.flatten(),
-                                                   weights_,
-                                                   runs=self.runs)
+            if self.efficient:
+                prediction = quantum_utils.run_efficient_circuit(
+                    image.flatten(), weights_, runs=self.runs)
+            else:
+                prediction = quantum_utils.run_circuit(image.flatten(),
+                                                       weights_,
+                                                       runs=self.runs)
             # test = np.random.uniform(0, 256)
             # prediction = {'0': 256 - test, '1': test}
             # loss += self.spsa_loss(prediction, label, track)
