@@ -126,7 +126,7 @@ class QuantumNetwork:
                                                        runs=self.runs)
             # test = np.random.uniform(0, 256)
             # prediction = {'0': 256 - test, '1': test}
-            # loss += self.spsa_loss(prediction, label, track)
+            loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
     def train_epochs(self, x_train, y_train, batchsize=222, epochs=30):
@@ -140,33 +140,30 @@ class QuantumNetwork:
             epochs (int): Number of epochs.
         """
         spsa_v = np.zeros(self.weights.shape)
-        with Pool(processes=2) as pool:
-            for epoch in range(epochs):
-                self.correct = 0
-                print(f'Epoch {epoch+1} out of {epochs}')
-                count = 0
-                alpha_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
-                beta_k = self.spsa_b / (epoch + 1)**self.spsa_t
-                for batch in data_utils.iterate_minibatches(x_train,
-                                                            y_train,
-                                                            batchsize,
-                                                            shuffle=True):
-                    start = time.time()
-                    count += 1
-                    pertubation = np.random.uniform(-1, 1, self.weights.shape)
-                    b_loss = pool.starmap(
-                        self.spsa_batch_loss,
-                        [(batch, alpha_k * pertubation, True),
-                         (batch, -alpha_k * pertubation)])
-                    spsa_g = (b_loss[0] - b_loss[1]) / (2 * alpha_k)
-                    self.losses.append(b_loss[0])
-                    spsa_v = self.spsa_gamma * spsa_v - spsa_g * beta_k * pertubation
-                    self.weights += spsa_v
-                    end = time.time()
-                    print(
-                        f'Completed Batch {count} out of {x_train.shape[0]//batchsize +1} in {end-start} seconds'
-                    )
-                self.accuracies.append(self.correct / x_train.shape[0])
+        for epoch in range(epochs):
+            self.correct = 0
+            print(f'Epoch {epoch+1} out of {epochs}')
+            count = 0
+            alpha_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
+            beta_k = self.spsa_b / (epoch + 1)**self.spsa_t
+            for batch in data_utils.iterate_minibatches(x_train,
+                                                        y_train,
+                                                        batchsize,
+                                                        shuffle=True):
+                start = time.time()
+                count += 1
+                pertubation = np.random.uniform(-1, 1, self.weights.shape)
+                b_loss_1 = self.spsa_batch_loss(batch, alpha_k * pertubation, True)
+                b_loss_2 = self.spsa_batch_loss(batch, -alpha_k * pertubation)
+                spsa_g = (b_loss_1 - b_loss_2) / (2 * alpha_k)
+                self.losses.append(b_loss_1)
+                spsa_v = self.spsa_gamma * spsa_v - spsa_g * beta_k * pertubation
+                self.weights += spsa_v
+                end = time.time()
+                print(
+                    f'Completed Batch {count} out of {x_train.shape[0]//batchsize +1} in {end-start} seconds'
+                )
+            self.accuracies.append(self.correct / x_train.shape[0])
 
     def predict(self, image):
         """Predicts the label of an image.
@@ -223,7 +220,7 @@ if __name__ == '__main__':
                                                       filter_values=True,
                                                       value_true=4,
                                                       value_false=9)
-    NETWORK = QuantumNetwork(DIMENSION, runs=256)
+    NETWORK = QuantumNetwork(DIMENSION, runs=512)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
     # test_count = 0
