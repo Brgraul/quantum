@@ -62,7 +62,7 @@ class QuantumNetwork:
                                  spsa_A=74.1,
                                  spsa_s=4.13,
                                  spsa_t=0.658,
-                                 spsa_gamma=0.0882,
+                                 spsa_gamma=0.882,
                                  spsa_eta=5.59,
                                  spsa_lambda_=0.234):
         """Sets params for the spsa algorithm, defaults from the paper.
@@ -190,12 +190,12 @@ class QuantumNetwork:
         """
         Generates images for network Accuracy and Loss.
         """
-        plt.subplot(2, 1, 1)
+        plt.subplot(1, 2, 1)
         plt.plot(self.accuracies)
         plt.title('Network Stats')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
-        plt.subplot(2, 1, 2)
+        plt.subplot(1, 2, 2)
         plt.plot(self.losses)
         plt.xlabel('Batches')
         plt.ylabel('Loss')
