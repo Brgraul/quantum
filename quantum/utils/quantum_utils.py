@@ -65,10 +65,11 @@ def hermitian_from_weights(weights, dimension):
     reals = weights[dimension:dim]
     imaginaries = weights[dim:]
     assert reals.shape == imaginaries.shape
-    hermitian = np.matrix(np.diag(diagonals + 0j))
+    diag = np.matrix(np.diag(diagonals))
+    hermitian = np.matrix(np.zeros((16,16), dtype=complex))
     hermitian[np.triu_indices(dimension, 1)] = np.array(
         [complex(a, b) for a, b in zip(reals, imaginaries)])
-    hermitian = hermitian + hermitian.H  # tril and triu don't use the same ordering!
+    hermitian = hermitian + hermitian.H + diag  # tril and triu don't use the same ordering!
     assert is_hermitian_matrix(hermitian)
     return hermitian
 
@@ -176,3 +177,10 @@ def run_efficient_circuit(image,
     counts = qiskit.execute(base_circiut, backend,
                             shots=runs).result().get_counts()
     return counts
+
+if __name__ == "__main__":
+    image = np.random.random(size=(16, 1))
+    weights = np.random.random(size=(13, 16**2))
+    run_efficient_circuit(image, weights, draw=True)
+    weights = np.random.random(size=(16, 16))
+    run_circuit(image, weights, draw=True)
