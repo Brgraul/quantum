@@ -44,7 +44,8 @@ class QuantumNetwork:
                                                   unitary_dim**2))
         else:
             self.qubits = dimension**2
-            self.weights = np.random.normal(size=(self.qubits, unitary_dim**2))
+            self.weights = np.random.normal(size=(self.qubits - 1,
+                                                  unitary_dim**2))
 
         #spsa
         self.spsa_a = 0
@@ -124,8 +125,6 @@ class QuantumNetwork:
                 prediction = quantum_utils.run_circuit(image.flatten(),
                                                        weights_,
                                                        runs=self.runs)
-            # test = np.random.uniform(0, 256)
-            # prediction = {'0': 256 - test, '1': test}
             loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
@@ -183,8 +182,8 @@ class QuantumNetwork:
             prediction = quantum_utils.run_circuit(image,
                                                    self.weights,
                                                    runs=self.runs)
-        prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
-        return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
+        prediction = max(prediction.items(), key=operator.itemgetter(1))[0]
+        return list(LABELS.keys())[list(LABELS.values()).index(prediction)]
 
     def print_stats(self):
         """
