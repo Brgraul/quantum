@@ -66,7 +66,7 @@ def hermitian_from_weights(weights, dimension):
     imaginaries = weights[dim:]
     assert reals.shape == imaginaries.shape
     diag = np.matrix(np.diag(diagonals))
-    hermitian = np.matrix(np.zeros((16,16), dtype=complex))
+    hermitian = np.matrix(np.zeros((dimension, dimension), dtype=complex))
     hermitian[np.triu_indices(dimension, 1)] = np.array(
         [complex(a, b) for a, b in zip(reals, imaginaries)])
     hermitian = hermitian + hermitian.H + diag  # tril and triu don't use the same ordering!
@@ -92,6 +92,7 @@ def unitaries_from_weights(weights, dimension=4):
 
 def run_circuit(image,
                 weights,
+                gates_per_step,
                 backend=Aer.get_backend('qasm_simulator'),
                 draw=False,
                 runs=1024):
@@ -111,76 +112,31 @@ def run_circuit(image,
     dimension = len(image)
     features = transform(image)
     unitaries = unitaries_from_weights(weights)
-
-    base_circiut = qiskit.QuantumCircuit(dimension, 1)
+    base_circuit = qiskit.QuantumCircuit(dimension, 1)
 
     for index, state in enumerate(features):
-        base_circiut.initialize(state, index)
+        base_circuit.initialize(state, index)
 
     index = 0
-    for i in range(int(np.log2(dimension))):
-        steps = dimension // (2**(i + 1))
-        step_size = dimension // steps
-
-        for j in range(steps):
+    for i in range(len(gates_per_step)):
+        step = 2 ** (i + 1)
+        for j in range(gates_per_step[i]):
             qubits = []
-            lower = step_size * j + 2**i - 1
-            upper = step_size * j + step_size
-            qubits.append(base_circiut.qubits[lower])
-            qubits.append(base_circiut.qubits[upper - 1])
-            base_circiut.unitary(unitaries[index], qubits, f'U({i},{j})')
+            upper = (2**i)-1+step*j
+            lower = (2**(i+1))-1+step*j
+            qubits.append(base_circuit.qubits[lower])
+            qubits.append(base_circuit.qubits[upper])
+            base_circuit.unitary(unitaries[index], qubits, f'U({i},{j})')
             index += 1
-    base_circiut.measure([dimension - 1], [0])
+    base_circuit.measure([dimension - 1], [0])
 
     if draw:
-        print(base_circiut)
-    counts = qiskit.execute(base_circiut, backend,
-                            shots=runs).result().get_counts()
-    return counts
-
-
-def run_efficient_circuit(image,
-                          weights,
-                          backend=Aer.get_backend('qasm_simulator'),
-                          draw=False,
-                          runs=1024):
-    """Executes an efficient quantum circiut on the image using the weights for 
-        unitary operators.
-
-    Args:
-        image: The flat input image.
-        weights: List of weights for unitaries.
-        backend: Simulation backend.
-        draw (bool): Draw the circuit.
-        runs (int): Simulation runs.
-
-    Returns:
-        counts: The simulated measurement counts.
-    """
-    features = transform(image)
-    unitaries = unitaries_from_weights(weights, 16)
-
-    base_circiut = qiskit.QuantumCircuit(4, 1)
-    for index in range(4):
-        base_circiut.initialize(features[index], index)
-    base_circiut.unitary(unitaries[0], base_circiut.qubits[0:4], 'U1')
-
-    for index, state in enumerate(features[4:]):
-        base_circiut.reset(3)
-        base_circiut.initialize(state, 3)
-        base_circiut.unitary(unitaries[index + 1], base_circiut.qubits[0:4],
-                             f'U{index+2}')
-    base_circiut.measure([0], [0])
-
-    if draw:
-        print(base_circiut)
-    counts = qiskit.execute(base_circiut, backend,
+        print(base_circuit)
+    counts = qiskit.execute(base_circuit, backend,
                             shots=runs).result().get_counts()
     return counts
 
 if __name__ == "__main__":
     image = np.random.random(size=(16, 1))
     weights = np.random.random(size=(13, 16**2))
-    run_efficient_circuit(image, weights, draw=True)
-    weights = np.random.random(size=(16, 16))
     run_circuit(image, weights, draw=True)
