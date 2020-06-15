@@ -66,7 +66,7 @@ def hermitian_from_weights(weights, dimension):
     imaginaries = weights[dim:]
     assert reals.shape == imaginaries.shape
     diag = np.matrix(np.diag(diagonals))
-    hermitian = np.matrix(np.zeros((16,16), dtype=complex))
+    hermitian = np.matrix(np.zeros((dimension, dimension), dtype=complex))
     hermitian[np.triu_indices(dimension, 1)] = np.array(
         [complex(a, b) for a, b in zip(reals, imaginaries)])
     hermitian = hermitian + hermitian.H + diag  # tril and triu don't use the same ordering!
