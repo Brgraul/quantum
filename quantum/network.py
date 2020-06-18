@@ -21,13 +21,13 @@ class QuantumNetwork:
     """
     Class representing a Quantum Network.
     """
-    def __init__(self, dimension, runs=1024, unitary_dim=4, efficient=True):
+    def __init__(self, dimension, shots=1024, unitary_dim=4, efficient=True):
         """Initializes the networ parameters. Hyperparameters are set to zero.
             Weights are initialized randomly.
 
         Args:
             dimension (int): The problem size. The network has dimension²-1 unitaries.
-            runs (int): Parameter for the circuit evaluation.
+            shots (int): Parameter for the circuit evaluation.
             unitary_dim (int): Dimensionality of unitaries: 4x4 -> 2 Qubits
                                                             8x8 -> 4 Qubits
             efficient (bool): Switch to use the efficient layout.
@@ -36,7 +36,7 @@ class QuantumNetwork:
         self.correct = 0
         self.losses = []
         self.efficient = efficient
-        self.runs = runs
+        self.shots = shots
         if efficient:
             unitary_dim = 16
             self.qubits = 4
@@ -97,11 +97,11 @@ class QuantumNetwork:
         Returns:
             loss (float): the single loss.
         """
-        p_max = max(prediction.values()) / self.runs
-        p_label = prediction.pop(LABELS[label], None) / self.runs
+        p_max = max(prediction.values()) / self.shots
+        p_label = prediction.pop(LABELS[label], None) / self.shots
         if (p_max == p_label and track):
             self.correct += 1
-        p_max_not = max(prediction.values()) / self.runs
+        p_max_not = max(prediction.values()) / self.shots
         return max(p_max_not - p_label + self.spsa_lambda_, 0)**self.spsa_eta
 
     def spsa_batch_loss(self, batch, pertubation, track=False):
@@ -120,11 +120,11 @@ class QuantumNetwork:
         for image, label in zip(x_batch, y_batch):
             if self.efficient:
                 prediction = quantum_utils.run_efficient_circuit(
-                    image.flatten(), weights_, runs=self.runs)
+                    image.flatten(), weights_, shots=self.shots)
             else:
                 prediction = quantum_utils.run_circuit(image.flatten(),
                                                        weights_,
-                                                       runs=self.runs)
+                                                       shots=self.shots)
             loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
@@ -177,11 +177,11 @@ class QuantumNetwork:
         if self.efficient:
             prediction = quantum_utils.run_efficient_circuit(image,
                                                              self.weights,
-                                                             runs=self.runs)
+                                                             shots=self.shots)
         else:
             prediction = quantum_utils.run_circuit(image,
                                                    self.weights,
-                                                   runs=self.runs)
+                                                   shots=self.shots)
         prediction = max(prediction.items(), key=operator.itemgetter(1))[0]
         return list(LABELS.keys())[list(LABELS.values()).index(prediction)]
 
