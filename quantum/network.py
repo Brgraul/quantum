@@ -221,7 +221,7 @@ if __name__ == '__main__':
                                                       filter_values=True,
                                                       value_true=0,
                                                       value_false=4)
-    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512)
+    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512, efficient=True)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
     NETWORK.print_stats()
