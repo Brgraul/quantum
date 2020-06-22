@@ -183,8 +183,8 @@ class QuantumNetwork:
                                                    self.weights,
                                                    shots=self.shots)
         prediction = max(prediction.items(), key=operator.itemgetter(1))[0]
-        return list(self.LABELS.keys())[list(
-            self.LABELS.values()).index(prediction)]
+        return list(self.labels.keys())[list(
+            self.labels.values()).index(prediction)]
 
     def print_stats(self):
         """
