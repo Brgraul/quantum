@@ -202,12 +202,12 @@ class QuantumNetwork:
         plt.show()
 
     def save_model(self, filename='model.pickle'):
-        with open('data' + filename, 'wb+') as file_:
+        with open('data/' + filename, 'wb+') as file_:
             pickle.dump(self, file_)
 
     @staticmethod
     def load_model(filename='model.pickle'):
-        with open('data' + filename, 'rb') as file_:
+        with open('data/' + filename, 'rb') as file_:
             model = pickle.load(file_)
         return model
 
@@ -225,4 +225,8 @@ if __name__ == '__main__':
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
     NETWORK.print_stats()
-    NETWORK.predict(X_TEST[0])
+    test_count = 0
+    for sample, label in zip(X_TEST, Y_TEST):
+        if (NETWORK.predict(sample) == label):
+            test_count += 1
+    print(f'Test Accuracy: {test_count/X_TEST.shape[0]}')
