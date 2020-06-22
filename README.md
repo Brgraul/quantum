@@ -1,7 +1,5 @@
 # Quantum Machine Learning Example
 
-**Under developement**
-
 This project implements a disciminative algorithm for quantum machine learning
 described in [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf).
 The quantum circuits are implemented using [Qiskit](https://qiskit.org/).
@@ -18,7 +16,7 @@ Simply clone the repository and install the necessary requirements
     python -m pip install --upgrade pip
 ```
 
-The project dependencies are changing regularly at the moment.
+Install the project dependencies:
 ```
     pip install tensorflow numpy matplotlib qiskit
 ```
@@ -38,4 +36,7 @@ As an example you can run the network file as an module
     ![Efficient circiut](https://github.com/Gistbatch/quantum/blob/master/quantum/data/efficient.png)
 
 ## Sources
----
+
+[1] W. Huggins, P. Patil, B. Mitchell, K. B. Whaley, and E. M. Stoudenmire, “Towards quantum machine learningwith tensor networks, ”Quantum Science and Technology, vol. 4, p. 024001, Jan 2019
+
+[2] Qiskit: An Open-source Framework for Quantum Computing 2019, see [Qiskit.bib](https://raw.githubusercontent.com/Qiskit/qiskit/master/Qiskit.bib)
