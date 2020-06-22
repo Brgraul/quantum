@@ -6,7 +6,6 @@
 """
 import operator
 import pickle
-import time
 from multiprocessing import Pool
 
 import matplotlib.pyplot as plt
@@ -149,7 +148,6 @@ class QuantumNetwork:
                                                         y_train,
                                                         batchsize,
                                                         shuffle=True):
-                # start = time.time()
                 count += 1
                 pertubation = np.random.binomial(1, 0.5, self.weights.shape)
                 b_loss_1 = self.spsa_batch_loss(batch, beta_k * pertubation,
@@ -159,10 +157,6 @@ class QuantumNetwork:
                 self.losses.append(b_loss_1)
                 spsa_v = self.spsa_gamma * spsa_v - spsa_g * alpha_k * pertubation
                 self.weights += spsa_v
-                # end = time.time()
-                # print(
-                #     f'Completed Batch {count} out of {x_train.shape[0]//batchsize +1} in {end-start} seconds'
-                # )
             self.accuracies.append(self.correct / x_train.shape[0])
 
     def predict(self, image):
@@ -218,15 +212,10 @@ if __name__ == '__main__':
      Y_TRAIN), (X_TEST,
                 Y_TEST) = data_utils.generate_dataset(DIMENSION,
                                                       filter_values=True,
-                                                      value_true=4,
-                                                      value_false=9)
+                                                      value_true=0,
+                                                      value_false=4)
     NETWORK = QuantumNetwork(DIMENSION, shots=512)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
-    # test_count = 0
-    # for sample, label in zip(X_TEST, Y_TEST):
-    #     if (NETWORK.predict(sample) == label):
-    #         test_count += 1
-    # print(f'Test Accuracy: {test_count/X_TRAIN.shape[0]}')
     NETWORK.print_stats()
     NETWORK.predict(X_TEST[0])
