@@ -202,12 +202,12 @@ class QuantumNetwork:
         plt.show()
 
     def save_model(self, filename='model.pickle'):
-        with open('data/' + filename, 'wb+') as file_:
+        with open(filename, 'wb+') as file_:
             pickle.dump(self, file_)
 
     @staticmethod
     def load_model(filename='model.pickle'):
-        with open('data/' + filename, 'rb') as file_:
+        with open(filename, 'rb') as file_:
             model = pickle.load(file_)
         return model
 
