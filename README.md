@@ -12,7 +12,7 @@ Simply clone the repository and install the necessary requirements
     cd quantum
     python -m venv venv
     venv\Scripts\activate (Windows)
-    venv\bin\activate (Linux)
+    source venv\bin\activate (Linux)
     python -m pip install --upgrade pip
 ```
 
