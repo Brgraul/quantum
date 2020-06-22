@@ -13,19 +13,23 @@ import numpy as np
 
 from quantum.utils import data_utils, quantum_utils
 
-LABELS = {0: '1', 4: '0'}
-
 
 class QuantumNetwork:
     """
     Class representing a Quantum Network.
     """
-    def __init__(self, dimension, shots=1024, unitary_dim=4, efficient=True):
+    def __init__(self,
+                 dimension,
+                 labels,
+                 shots=1024,
+                 unitary_dim=4,
+                 efficient=True):
         """Initializes the networ parameters. Hyperparameters are set to zero.
             Weights are initialized randomly.
 
         Args:
             dimension (int): The problem size. The network has dimension²-1 unitaries.
+            labels (dict): Assigned labels to quibit states eg. {0: '1', 4: '0'}.
             shots (int): Parameter for the circuit evaluation.
             unitary_dim (int): Dimensionality of unitaries: 4x4 -> 2 Qubits
                                                             8x8 -> 4 Qubits
@@ -36,6 +40,7 @@ class QuantumNetwork:
         self.losses = []
         self.efficient = efficient
         self.shots = shots
+        self.labels = labels
         if efficient:
             unitary_dim = 16
             self.qubits = 4
@@ -97,7 +102,7 @@ class QuantumNetwork:
             loss (float): the single loss.
         """
         p_max = max(prediction.values()) / self.shots
-        p_label = prediction.pop(LABELS[label], None) / self.shots
+        p_label = prediction.pop(self.labels[label], None) / self.shots
         if (p_max == p_label and track):
             self.correct += 1
         p_max_not = max(prediction.values()) / self.shots
@@ -166,7 +171,7 @@ class QuantumNetwork:
             image: The input image.
 
         Returns:
-            prediction_label: The label according to the LABELS dict.
+            prediction_label: The label according to the labels dict.
         """
         image = image.flatten()
         if self.efficient:
@@ -178,7 +183,8 @@ class QuantumNetwork:
                                                    self.weights,
                                                    shots=self.shots)
         prediction = max(prediction.items(), key=operator.itemgetter(1))[0]
-        return list(LABELS.keys())[list(LABELS.values()).index(prediction)]
+        return list(self.LABELS.keys())[list(
+            self.LABELS.values()).index(prediction)]
 
     def print_stats(self):
         """
@@ -208,13 +214,14 @@ class QuantumNetwork:
 
 if __name__ == '__main__':
     DIMENSION = 4
+    LABELS = {0: '1', 4: '0'}
     (X_TRAIN,
      Y_TRAIN), (X_TEST,
                 Y_TEST) = data_utils.generate_dataset(DIMENSION,
                                                       filter_values=True,
                                                       value_true=0,
                                                       value_false=4)
-    NETWORK = QuantumNetwork(DIMENSION, shots=512)
+    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
     NETWORK.print_stats()
