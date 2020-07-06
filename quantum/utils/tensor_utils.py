@@ -1,0 +1,177 @@
+"""This module provides utility to generte and contract a tensor network."""
+
+import tensornetwork as tn
+from .quantum_utils import unitaries_from_weights
+
+import numpy as np
+
+
+def trigonometric_embedding(data, v):
+    """ WORKS
+
+    Args:
+        data:
+
+    Returns:
+
+    """
+    feature_map = np.zeros((data.shape[0], 2))
+    tensor_data = []
+    for i in range(len(data) // (2 * v)):
+        for k in range(2 * v):
+            l = i * 2 * v + k  # Index in the input data array of length dim**2x1
+            idx = (
+                2 * i * 2 * v + k
+            )  # Index in the array of dual and non-dual vectors of length 2*dim**2x1
+            feature_map[l][0] = np.cos(np.pi / 2 * data[l])
+            feature_map[l][1] = np.sin(np.pi / 2 * data[l])
+            tensor_data.append(tn.Node(feature_map[l], name=f"data_{l}"))
+        for k in range(2 * v):
+            l = i * 2 * v + k
+            idx = 2 * i * 2 * v + k
+            tensor_data.append(tn.Node(feature_map[l].T, name=f"data_h_{l}"))
+    return tensor_data
+
+
+def labeling(rho: np.array):
+    """ WORKS
+
+    Args:
+        rho_tensor:
+
+    Returns:
+
+    """
+    if rho[0][0].real > 0.5:
+        return 1
+    else:
+        return 0
+
+
+def build_tensor(tensor_data, unitaries):
+    """ WORKS
+
+    Args:
+        tensor_data:
+        unitaries:
+
+    Returns:
+
+    """
+
+    data_length = len(tensor_data) // 2
+    v = int(np.sqrt(unitaries[0].shape[0]) / 2)
+
+    gates_per_step = []
+    gates_per_step.append(data_length // (2 ** v))
+    steps = int(np.log2(gates_per_step[0])) + 1  # +1 as we added the first step already
+    for i in range(1, steps):
+        gates_per_step.append(gates_per_step[i - 1] // 2)
+
+    # Cumulative gates in a given step
+    c_gates = [0]
+    sum_ = 0
+    for i in range(len(gates_per_step)):
+        sum_ += 2 * gates_per_step[i]
+        c_gates.append(sum_)
+
+    tensor_network = []
+
+    redistribute_indexes = [2 for i in range(int(np.log2(unitaries[0].size)))]
+
+    for i, unitary in enumerate(unitaries):
+        tensor_network.append(
+            tn.Node(unitary.reshape(redistribute_indexes), name=f"unitary_{i}")
+        )
+        tensor_network.append(
+            tn.Node(
+                unitary.conjugate().reshape(redistribute_indexes), name=f"unitary_h_{i}"
+            )
+        )
+
+    for i in range(gates_per_step[0]):
+        for k in range(2 * v):
+            idx = (
+                2 * i * 2 * v + k
+            )  # Index in the array of dual and non-dual vectors of length 2*dim**2x1
+            tensor_network[2 * i][k] ^ tensor_data[idx][0]
+        for k in range(2 * v):
+            idx = 2 * i * 2 * v + k
+            tensor_network[2 * i + 1][k] ^ tensor_data[idx + 2 * v][0]
+
+    for i in range(
+        steps - 1
+    ):  #  Last execution is peeled off, as there's no 'next tensor' to link
+        for j in range(gates_per_step[i]):
+            # Within a given gate
+            gate_idx = 2 * j + c_gates[i]
+            for k in range(v):
+                tensor_network[gate_idx][2 * v + k] ^ tensor_network[gate_idx + 1][
+                    2 * v + k
+                ]
+            for k in range(v):
+                tensor_network[gate_idx][k + 3 * v] ^ tensor_network[
+                    ((gate_idx - c_gates[i]) // 4) * 2 + c_gates[i + 1]
+                ][((gate_idx // 2) % 2) * v + k]
+                tensor_network[gate_idx + 1][k + 3 * v] ^ tensor_network[
+                    ((gate_idx - c_gates[i]) // 4) * 2 + c_gates[i + 1] + 1
+                ][((gate_idx // 2) % 2) * v + k]
+    # Contracting the last tensor in the network
+    gate_idx = c_gates[-2]  #  Remember we appended an offset 0, thus -2 instead of -1
+    for k in range((2 * v) - 1):
+        tensor_network[gate_idx][2 * v + k] ^ tensor_network[gate_idx + 1][2 * v + k]
+    return tensor_network
+
+
+def contract(tensor_data, tensor_network):
+    """ WORKS
+
+    Args:
+        tensor_data:
+        tensor_network:
+
+    Returns:
+
+    """
+    temp = []
+    v = len(tensor_network[0].tensor.shape) // 4
+    data_length = len(tensor_data) // 2
+
+    for i in range(data_length // (2 * v)):
+        cont1 = [tensor_data[i] for i in range(i * 4 * v, (i + 1) * 4 * v)]
+        cont_1u = [tensor_network[i] for i in range(i * v, (i + 1) * v)]
+        cont = cont1 + cont_1u
+        temp.append(tn.contractors.greedy(cont, ignore_edge_order=True))
+
+    tmp1 = temp[0] @ tensor_network[8]
+    tmp2 = temp[1] @ tensor_network[9]
+    res = tmp1 @ tmp2
+
+    tmp3 = temp[2] @ tensor_network[10]
+    tmp4 = temp[3] @ tensor_network[11]
+    res2 = tmp3 @ tmp4
+
+    tmp5 = res @ tensor_network[12]
+    tmp6 = res2 @ tensor_network[13]
+    res_tot = tmp5 @ tmp6
+
+    return res_tot.tensor
+
+
+def evaluate_tensor(image: np.array, weights: np.array, v: int) -> int:
+    """ Generates a tensor network of bond dimension v and contracts it, resulting in a
+        2x2 reduced density matrix
+    Args:
+        image: The flattened image data that serves as input to the tensor network
+        weights: Parameters for creating the tensors in the network
+        v: Bond dimension of the subtrees that comprise the network
+
+    Returns:
+        rho: 2x2 reduced density matrix representing the quantum state at the end of the
+        circuit
+    """
+    unitaries = unitaries_from_weights(weights, 2 ** (2 * v))
+    tensor_data = trigonometric_embedding(image, v)
+    tensor_network = build_tensor(tensor_data, unitaries)
+    rho = contract(tensor_data, tensor_network)
+    return labeling(rho)
