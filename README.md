@@ -1,10 +1,14 @@
-# Quantum Machine Learning Example
+# Towards Quantum Machine learning with Tensor Networks
 
-**Under developement**
+**Topics of Quantum Computing (IN2107, IN0014, IN218307)**
 
-This project implements a disciminative algorithm for quantum machine learning
-described in [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf).
-The quantum circuits are implemented using [Qiskit](https://qiskit.org/).
+This project implements part of the numerical experiments proposed by Huggins et al. in the paper [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf).
+
+<img src="/media/architecture.png"  width="60%">
+
+
+The quantum circuits are implemented using [Qiskit](https://qiskit.org/). </br>
+The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
 
 ## Install
 
@@ -28,14 +32,3 @@ As an example you can run the network file as an module
 ```
     python -m quantum.network
 ```
-
-### Availabel Ciruits
-1. Default Circuit using unitaries for two Qubits at a time described in figure 7.
-
-    ![Default circuit](https://github.com/Gistbatch/quantum/blob/master/quantum/data/default.png)
-2. Efficient Circuit using unitaries for four Quibts at a time descibed in figure 11.
-
-    ![Efficient circiut](https://github.com/Gistbatch/quantum/blob/master/quantum/data/efficient.png)
-
-## Sources
----
