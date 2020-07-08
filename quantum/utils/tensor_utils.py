@@ -1,4 +1,4 @@
-"""This module provides utility to generte and contract a tensor network."""
+"""This module provides utility to generate and contract a tensor network."""
 
 import tensornetwork as tn
 from .quantum_utils import unitaries_from_weights
@@ -6,13 +6,20 @@ from .quantum_utils import unitaries_from_weights
 import numpy as np
 
 
-def trigonometric_embedding(data, v):
-    """ WORKS
+def trigonometric_embedding(data: np.array, v: int) -> list[tn.Node]:
+    """ Takes the data vector of shape 1xN and maps it to tensor_data, a vector of shape
+     2x(2*N) that serves as input for the tensor network.
+
+    The mapping used is:
+
+    y_k = y_( k + 2*v ) = [cos( pi*x_k / 2 ), sin( pi*x_k / 2 )]
 
     Args:
-        data:
+        data: Vector of floats contained in the range [0,1]
+        v: Bond dimension of the subtrees connecting the tensor network
 
     Returns:
+        tensor_data: list of nodes holding the mapped data
 
     """
     feature_map = np.zeros((data.shape[0], 2))
@@ -20,26 +27,25 @@ def trigonometric_embedding(data, v):
     for i in range(len(data) // (2 * v)):
         for k in range(2 * v):
             l = i * 2 * v + k  # Index in the input data array of length dim**2x1
-            idx = (
-                2 * i * 2 * v + k
-            )  # Index in the array of dual and non-dual vectors of length 2*dim**2x1
+            # Index in the array of dual and non-dual vectors of length 2*dim**2x1
             feature_map[l][0] = np.cos(np.pi / 2 * data[l])
             feature_map[l][1] = np.sin(np.pi / 2 * data[l])
             tensor_data.append(tn.Node(feature_map[l], name=f"data_{l}"))
         for k in range(2 * v):
             l = i * 2 * v + k
-            idx = 2 * i * 2 * v + k
-            tensor_data.append(tn.Node(feature_map[l].T, name=f"data_h_{l}"))
+            tensor_data.append(tn.Node(feature_map[l], name=f"data_h_{l}"))
     return tensor_data
 
 
 def labeling(rho: np.array):
-    """ WORKS
+    """ Takes a reduced density matrix rho, and returns label 1 if the first diagonal
+    entry (probability of state |0>) is bigger than 0.5, and label 0 otherwise.
 
     Args:
-        rho_tensor:
+        rho: Reduced density matrix of shape 2x2
 
     Returns:
+        label: Binary label
 
     """
     if rho[0][0].real > 0.5:
@@ -48,14 +54,23 @@ def labeling(rho: np.array):
         return 0
 
 
-def build_tensor(tensor_data, unitaries):
-    """ WORKS
+def build_tensor(
+    tensor_data: list[tn.Node], unitaries: list[np.Array]
+) -> list[tn.Node]:
+    """ Takes a valid tensor_data vector, a valid list of unitary matrices, and makes
+    the necessary edge connections to construct the network as illustrated in the
+    Huggins et al. paper 'Towards Quantum Machine Learning with Tensor Networks'
+
+    arXiv:1803.11537
 
     Args:
-        tensor_data:
-        unitaries:
+        tensor_data: List of nodes holding the mapped input data in a valid format
+        - see doc trigonometric_embedding()
+        unitaries: List of valid unitary matrices
 
     Returns:
+        tensor_network: List of connected tensors forming the network as explained in
+        the Huggins' paper
 
     """
 
@@ -124,14 +139,25 @@ def build_tensor(tensor_data, unitaries):
 
 
 def contract(tensor_data, tensor_network):
-    """ WORKS
+    """ Takes the lists tensor_data and tensor_network, and contracts them following
+    a naive algorithm.
+
+    NOTE: This is a fragile implementation - Only works with v = 2 -pending the solution
+    of the issue with Google/TensorNetwork method
+    tensornetwork.contractors.auto(nodes, …)
+
+    -> The contraction algorithm finding falls in an infinite recursion, that
+    bloats the RAM and kills the Python process.
+
 
     Args:
-        tensor_data:
-        tensor_network:
+        tensor_data: List of nodes holding the mapped input data in a valid format
+        tensor_network: List of connected tensors forming the network as explained in
+        the Huggins' paper
 
     Returns:
-
+        res_tot.tensor: 2x2 reduced density matrix representing the quantum state at the
+        end of the circuit
     """
     temp = []
     v = len(tensor_network[0].tensor.shape) // 4
