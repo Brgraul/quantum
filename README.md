@@ -15,7 +15,18 @@ The tensor networks are implemented using [TensorNetwork](https://github.com/goo
 
 ## Project structure 
 
-- **/notebooks**: Holds the experiments used for the development of the tensor network code and an isolated example of its functioning.
+- **/notebooks**: Holds the experiments used for the development of the tensor network code and an isolated example of its functioning. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **AltContraction.ipynb**: Monolith implementation of the tensor network contraction and labeling. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **TensorNetwork.ipynb**: Monolith relying on the method tensornetwork.contractors.auto() </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **RefactorTest.ipynb**: Functional refactoring of the tensor network contraction and labeling. </br>
+- **/quantum**: Holds the codebase for the classification algorithms: </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **network.py**: Holds the QuantumNetwork class with its respective training and prediction methods. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **/utils**: Holds the scripts supporting the functioning of the network. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **quantum_utils.py**: Functions for unitary matrix and quantum circuit generation. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **tensor_utils.py**: Functions for the embedding, generation of the network, contraction and labeling </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **data_utils.py**: Preprocessing functions for loading the classic data into the network. </br>
+
+
 
 ## Install
 
