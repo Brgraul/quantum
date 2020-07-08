@@ -1,44 +1,55 @@
-"""This module provides the neural network part of the implementation. """
+"""This module provides the neural network part of the implementation.
+    Todos:
+        * TODO: Hyperparameter tuning
+        * TODO: Check Metrics
+        * TODO: check matrix generation
+"""
 import operator
 import pickle
-import time
 from multiprocessing import Pool
-import quimb as qu
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from quantum.utils import data_utils, quantum_utils
 
-LABELS = {4: '1', 9: '0'}
-
-v_dual = qu(array, qtype='bra', normalized=True)
 
 class QuantumNetwork:
     """
     Class representing a Quantum Network.
     """
-    def __init__(self, dimension, runs=1024, unitary_dim=4, v=1):
+    def __init__(self,
+                 dimension,
+                 labels,
+                 shots=1024,
+                 unitary_dim=4,
+                 efficient=True):
         """Initializes the networ parameters. Hyperparameters are set to zero.
             Weights are initialized randomly.
 
         Args:
             dimension (int): The problem size. The network has dimension²-1 unitaries.
-            runs (int): Parameter for the circuit evaluation.
+            labels (dict): Assigned labels to quibit states eg. {0: '1', 4: '0'}.
+            shots (int): Parameter for the circuit evaluation.
             unitary_dim (int): Dimensionality of unitaries: 4x4 -> 2 Qubits
                                                             8x8 -> 4 Qubits
+            efficient (bool): Switch to use the efficient layout.
         """
         self.accuracies = []
         self.correct = 0
         self.losses = []
-        self.runs = runs
-        self.v = v  # Bond dimension
-        self.qubits = dimension**2
-        self.steps = np.log2(self.qubits)
-        self.gates_per_step = [] # Number of hermitian gates per step
-        for i in range(1, self.steps + 1):
-            self.gates_per_step.append(self.qubits // (2 ** i))
-        self.weights = np.random.normal(size=(int(sum(self.gates_per_step)), 2**(4*v)))
+        self.efficient = efficient
+        self.shots = shots
+        self.labels = labels
+        if efficient:
+            unitary_dim = 16
+            self.qubits = 4
+            self.weights = np.random.normal(size=(dimension**2 - 3,
+                                                  unitary_dim**2))
+        else:
+            self.qubits = dimension**2
+            self.weights = np.random.normal(size=(self.qubits - 1,
+                                                  unitary_dim**2))
 
         #spsa
         self.spsa_a = 0
@@ -90,11 +101,11 @@ class QuantumNetwork:
         Returns:
             loss (float): the single loss.
         """
-        p_max = max(prediction.values()) / self.runs
-        p_label = prediction.pop(LABELS[label], None) / self.runs
+        p_max = max(prediction.values()) / self.shots
+        p_label = prediction.pop(self.labels[label], None) / self.shots
         if (p_max == p_label and track):
             self.correct += 1
-        p_max_not = max(prediction.values()) / self.runs
+        p_max_not = max(prediction.values()) / self.shots
         return max(p_max_not - p_label + self.spsa_lambda_, 0)**self.spsa_eta
 
     def spsa_batch_loss(self, batch, pertubation, track=False):
@@ -111,12 +122,13 @@ class QuantumNetwork:
         x_batch, y_batch = batch
         weights_ = self.weights + pertubation
         for image, label in zip(x_batch, y_batch):
-
-            prediction = quantum_utils.run_circuit(image.flatten(),
-                                                   weights_,
-                                                   runs=self.runs)
-            # test = np.random.uniform(0, 256)
-            # prediction = {'0': 256 - test, '1': test}
+            if self.efficient:
+                prediction = quantum_utils.run_efficient_circuit(
+                    image.flatten(), weights_, shots=self.shots)
+            else:
+                prediction = quantum_utils.run_circuit(image.flatten(),
+                                                       weights_,
+                                                       shots=self.shots)
             loss += self.spsa_loss(prediction, label, track)
         return loss / len(batch[0])
 
@@ -135,25 +147,21 @@ class QuantumNetwork:
             self.correct = 0
             print(f'Epoch {epoch+1} out of {epochs}')
             count = 0
-            alpha_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
-            beta_k = self.spsa_b / (epoch + 1)**self.spsa_t
+            beta_k = self.spsa_a / (epoch + 1 + self.spsa_A)**self.spsa_s
+            alpha_k = self.spsa_b / (epoch + 1)**self.spsa_t
             for batch in data_utils.iterate_minibatches(x_train,
                                                         y_train,
                                                         batchsize,
                                                         shuffle=True):
-                start = time.time()
                 count += 1
-                pertubation = np.random.uniform(-1, 1, self.weights.shape)
-                b_loss_1 = self.spsa_batch_loss(batch, alpha_k * pertubation, True)
-                b_loss_2 = self.spsa_batch_loss(batch, -alpha_k * pertubation)
-                spsa_g = (b_loss_1 - b_loss_2) / (2 * alpha_k)
+                pertubation = np.random.binomial(1, 0.5, self.weights.shape)
+                b_loss_1 = self.spsa_batch_loss(batch, beta_k * pertubation,
+                                                True)
+                b_loss_2 = self.spsa_batch_loss(batch, -beta_k * pertubation)
+                spsa_g = (b_loss_1 - b_loss_2) / (2 * beta_k)
                 self.losses.append(b_loss_1)
-                spsa_v = self.spsa_gamma * spsa_v - spsa_g * beta_k * pertubation
+                spsa_v = self.spsa_gamma * spsa_v - spsa_g * alpha_k * pertubation
                 self.weights += spsa_v
-                end = time.time()
-                print(
-                    f'Completed Batch {count} out of {x_train.shape[0]//batchsize +1} in {end-start} seconds'
-                )
             self.accuracies.append(self.correct / x_train.shape[0])
 
     def predict(self, image):
@@ -163,16 +171,20 @@ class QuantumNetwork:
             image: The input image.
 
         Returns:
-            prediction_label: The label according to the LABELS dict.
+            prediction_label: The label according to the labels dict.
         """
         image = image.flatten()
-
-        prediction = quantum_utils.run_circuit(image,
-                                               self.weights,
-                                               self.gates_per_step,
-                                               runs=self.runs)
-        prediciton = max(prediction.items(), key=operator.itemgetter(1))[0]
-        return list(LABELS.keys())[list(LABELS.values()).index(prediciton)]
+        if self.efficient:
+            prediction = quantum_utils.run_efficient_circuit(image,
+                                                             self.weights,
+                                                             shots=self.shots)
+        else:
+            prediction = quantum_utils.run_circuit(image,
+                                                   self.weights,
+                                                   shots=self.shots)
+        prediction = max(prediction.items(), key=operator.itemgetter(1))[0]
+        return list(self.labels.keys())[list(
+            self.labels.values()).index(prediction)]
 
     def print_stats(self):
         """
@@ -190,31 +202,31 @@ class QuantumNetwork:
         plt.show()
 
     def save_model(self, filename='model.pickle'):
-        with open('data' + filename, 'wb+') as file_:
+        with open(filename, 'wb+') as file_:
             pickle.dump(self, file_)
 
     @staticmethod
     def load_model(filename='model.pickle'):
-        with open('data' + filename, 'rb') as file_:
+        with open(filename, 'rb') as file_:
             model = pickle.load(file_)
         return model
 
 
 if __name__ == '__main__':
     DIMENSION = 4
+    LABELS = {0: '1', 4: '0'}
     (X_TRAIN,
      Y_TRAIN), (X_TEST,
                 Y_TEST) = data_utils.generate_dataset(DIMENSION,
                                                       filter_values=True,
-                                                      value_true=4,
-                                                      value_false=9)
-    NETWORK = QuantumNetwork(DIMENSION, runs=512)
+                                                      value_true=0,
+                                                      value_false=4)
+    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512, efficient=True)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
-    # test_count = 0
-    # for sample, label in zip(X_TEST, Y_TEST):
-    #     if (NETWORK.predict(sample) == label):
-    #         test_count += 1
-    # print(f'Test Accuracy: {test_count/X_TRAIN.shape[0]}')
     NETWORK.print_stats()
-    NETWORK.predict(X_TEST[0])
+    test_count = 0
+    for sample, label in zip(X_TEST, Y_TEST):
+        if (NETWORK.predict(sample) == label):
+            test_count += 1
+    print(f'Test Accuracy: {test_count/X_TEST.shape[0]}')
