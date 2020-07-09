@@ -75,7 +75,7 @@ python -m quantum.network
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **tensor_utils.py**: Functions for the embedding, generation of the network, contraction and labeling </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **data_utils.py**: Preprocessing functions for loading the classic data into the network. </br>
 
-## Roadmap
+## Roadmap
 The project is still under development. We aim to generalize the examples presented, and incorporate more lightweight networks like the MPS base one presented by Stavros et al. in [TensorNetwork for Machine Learning](https://arxiv.org/abs/1906.06329). 
 Next milestones are:
 - Parametrize the naive tensor network contraction for v!=2
