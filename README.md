@@ -23,9 +23,9 @@ pip install -r requirements.txt
 
 Unless wanting to make a global install, we encourage to first create a virtual environment and install only after activating it.
 
-## Usage
+## Usage
 
-The project contains a set of notebooks that allow you to play with the implementation of the tensor network plus a full classification architecture, and the necessary quantum circuit, tensor network and data utility functions.
+The project contains a set of notebooks that allow you to play with the implementation of the tensor network plus binary classification example based on the MNIST dataset, and the necessary quantum circuit, tensor network and data utility functions.
 
 ### Notebooks
 
@@ -38,9 +38,21 @@ jupyter lab
 
 ### Classification architecture
 
+If you wish to run the classification task with the tensor network prediction, pass the argument '-t' to the module.
+
 ```
-python -m quantum.network
+python -m quantum.network -t
 ```
+
+<img src="/media/architecture_tensor.png"  width="60%" style="padding-bottom: 3%;padding-top: 2%;">
+
+To run the example with quantum circuit predictions, pass no arguments to the module.
+
+```
+python -m quantum.network 
+```
+
+<img src="/media/architecture_circuit.png"  width="60%" style="padding-top: 2%;">
 
 ## Project structure 
 
@@ -55,27 +67,11 @@ python -m quantum.network
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **tensor_utils.py**: Functions for the embedding, generation of the network, contraction and labeling </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **data_utils.py**: Preprocessing functions for loading the classic data into the network. </br>
 
+## Roadmap
+The project is still under development. We aim to generalize the examples presented, and incorporate more lightweight networks like the MPS base one presented by Stavros et al. in [TensorNetwork for Machine Learning](https://arxiv.org/abs/1906.06329) 
 
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. 
 
-## Install
-
-Simply clone the repository and install the necessary requirements
-```
-    git clone https://github.com/Gistbatch/quantum.git
-    cd quantum
-    python -m venv venv
-    venv\Scripts\activate (Windows)
-    venv\bin\activate (Linux)
-    python -m pip install --upgrade pip
-```
-
-The project dependencies are changing regularly at the moment.
-```
-    pip install tensorflow numpy matplotlib qiskit
-```
-
-## Run
-As an example you can run the network file as an module
-```
-    python -m quantum.network
-```
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
