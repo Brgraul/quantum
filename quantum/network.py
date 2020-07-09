@@ -178,7 +178,8 @@ class QuantumNetwork:
         """
         image = image.flatten()
         if self.tensor:
-            prediction = tensor_utils.evaluate_tensor(image, self.weights, self.v)
+            v = 2  # Set the bond dimension of the tensor network.
+            prediction = tensor_utils.evaluate_tensor(image, self.weights, v)
             return list(self.labels.keys())[prediction]
 
         if self.efficient:
