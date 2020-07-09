@@ -2,16 +2,45 @@
 
 **Topics of Quantum Computing (IN2107, IN0014, IN218307)**
 
-This project implements part of the numerical experiments proposed by Huggins et al. in the paper [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf). Experiments implemented so far have been:
+This project implements part of the numerical experiments proposed by Huggins et al. in the paper [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf). The experiments implemented so far have been:
 
-- Classification task with a quantum circuit doing the predictions 
-- Classification task with an equivalent tensor network doing the predictions.
+(a) Classification task with a quantum circuit doing the predictions 
+(b) Classification task with an equivalent tensor network doing the predictions.
 
-<img src="/media/architecture.png"  width="60%">
+<img src="/media/labeled_circuit.png"  width="60%" style="padding-bottom: 5%;padding-top: 2%;">
 
 
-The quantum circuits are implemented using [Qiskit](https://qiskit.org/). </br>
+The quantum circuits are implemented using [Qiskit](https://qiskit.org/).
 The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
+
+## Installation
+
+Install the dependencies from the requirements file by using [pip](https://pip.pypa.io/en/stable/)
+
+```bash
+pip install -r requirements.txt
+```
+
+Unless wanting to make a global install, we encourage to first create a virtual environment and install only after activating it.
+
+## Usage
+
+The project contains a set of notebooks that allow you to play with the implementation of the tensor network plus a full classification architecture, and the necessary quantum circuit, tensor network and data utility functions.
+
+### Notebooks
+
+For executing the notebooks, simply enter the ```/notebooks``` folder and launch jupyter lab.
+
+```bash
+cd notbooks
+jupyter lab
+```
+
+### Classification architecture
+
+```
+python -m quantum.network
+```
 
 ## Project structure 
 
