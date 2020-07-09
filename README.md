@@ -4,14 +4,14 @@
 
 This project implements part of the numerical experiments proposed by Huggins et al. in the paper [Towards Quantum Machine Learning with Tensor Networks](https://arxiv.org/pdf/1803.11537.pdf). The experiments implemented so far have been:
 
-(a) Classification task with a quantum circuit doing the predictions 
+(a) Classification task with a quantum circuit doing the predictions </br>
 (b) Classification task with an equivalent tensor network doing the predictions.
 
 <img src="/media/labeled_circuit.png"  width="60%" style="padding-bottom: 5%;padding-top: 2%;">
 
 
 The quantum circuits ar e implemented using [Qiskit](https://qiskit.org/).
-The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
+The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork).
 
 ## Run w/o Install
 
