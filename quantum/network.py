@@ -10,8 +10,9 @@ from multiprocessing import Pool
 
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
-from quantum.utils import data_utils, quantum_utils
+from quantum.utils import data_utils, quantum_utils, tensor_utils
 
 
 class QuantumNetwork:
@@ -23,7 +24,8 @@ class QuantumNetwork:
                  labels,
                  shots=1024,
                  unitary_dim=4,
-                 efficient=True):
+                 efficient=True,
+                 tensor=False):
         """Initializes the networ parameters. Hyperparameters are set to zero.
             Weights are initialized randomly.
 
@@ -41,6 +43,7 @@ class QuantumNetwork:
         self.efficient = efficient
         self.shots = shots
         self.labels = labels
+        self.tensor = tensor
         if efficient:
             unitary_dim = 16
             self.qubits = 4
@@ -174,6 +177,10 @@ class QuantumNetwork:
             prediction_label: The label according to the labels dict.
         """
         image = image.flatten()
+        if self.tensor:
+            prediction = tensor_utils.evaluate_tensor(image, self.weights, self.v)
+            return list(self.labels.keys())[prediction]
+
         if self.efficient:
             prediction = quantum_utils.run_efficient_circuit(image,
                                                              self.weights,
@@ -213,20 +220,27 @@ class QuantumNetwork:
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', action='store_true')
+    args = parser.parse_args()
+
     DIMENSION = 4
-    LABELS = {0: '1', 4: '0'}
+    LABELS = {0: '0', 4: '1'}
     (X_TRAIN,
      Y_TRAIN), (X_TEST,
                 Y_TEST) = data_utils.generate_dataset(DIMENSION,
                                                       filter_values=True,
-                                                      value_true=0,
-                                                      value_false=4)
-    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512, efficient=True)
+                                                      value_true=4,
+                                                      value_false=0)
+    NETWORK = QuantumNetwork(DIMENSION, LABELS, shots=512, tensor=args.t)
     NETWORK.set_spsa_hyperparameters()
     NETWORK.train_epochs(X_TRAIN, Y_TRAIN, epochs=5)
     NETWORK.print_stats()
     test_count = 0
+
     for sample, label in zip(X_TEST, Y_TEST):
         if (NETWORK.predict(sample) == label):
             test_count += 1
+
     print(f'Test Accuracy: {test_count/X_TEST.shape[0]}')

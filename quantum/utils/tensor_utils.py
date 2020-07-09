@@ -4,9 +4,10 @@ import tensornetwork as tn
 from .quantum_utils import unitaries_from_weights
 
 import numpy as np
+from typing import List
 
 
-def trigonometric_embedding(data: np.array, v: int) -> list[tn.Node]:
+def trigonometric_embedding(data: np.array, v: int) -> List[tn.Node]:
     """ Takes the data vector of shape 1xN and maps it to tensor_data, a vector of shape
      2x(2*N) that serves as input for the tensor network.
 
@@ -55,8 +56,8 @@ def labeling(rho: np.array):
 
 
 def build_tensor(
-    tensor_data: list[tn.Node], unitaries: list[np.Array]
-) -> list[tn.Node]:
+    tensor_data: List[tn.Node], unitaries: List[np.array]
+) -> List[tn.Node]:
     """ Takes a valid tensor_data vector, a valid list of unitary matrices, and makes
     the necessary edge connections to construct the network as illustrated in the
     Huggins et al. paper 'Towards Quantum Machine Learning with Tensor Networks'
@@ -65,7 +66,6 @@ def build_tensor(
 
     Args:
         tensor_data: List of nodes holding the mapped input data in a valid format
-        - see doc trigonometric_embedding()
         unitaries: List of valid unitary matrices
 
     Returns:
@@ -138,7 +138,7 @@ def build_tensor(
     return tensor_network
 
 
-def contract(tensor_data, tensor_network):
+def contract(tensor_data: List[tn.Node], tensor_network: List[tn.Node]) -> np.array:
     """ Takes the lists tensor_data and tensor_network, and contracts them following
     a naive algorithm.
 
