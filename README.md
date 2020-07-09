@@ -13,7 +13,7 @@ This project implements part of the numerical experiments proposed by Huggins et
 The quantum circuits ar e implemented using [Qiskit](https://qiskit.org/).
 The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
 
-## Run w/o Install
+## Run w/o Install
 
 You can get a taste of the tensor algorithms used in this project with zero setup pain by accessing the following Google Colab notebooks:
 
