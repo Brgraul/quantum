@@ -10,7 +10,7 @@ This project implements part of the numerical experiments proposed by Huggins et
 <img src="/media/labeled_circuit.png"  width="60%" style="padding-bottom: 5%;padding-top: 2%;">
 
 
-The quantum circuits are implemented using [Qiskit](https://qiskit.org/).
+The quantum circuits ar e implemented using [Qiskit](https://qiskit.org/).
 The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
 
 ## Run w/o Install
@@ -29,15 +29,15 @@ Install the dependencies from the requirements file by using [pip](https://pip.p
 pip install -r requirements.txt
 ```
 
-Unless wanting to make a global install, we encourage to first create a virtual environment and install only after activating it.
+Unless you want to make a global install, we encourage first to create a virtual environment and install the dependencies only after activating it.
 
 ## Usage
 
-The project contains a set of notebooks that allow you to play with the implementation of the tensor network plus binary classification example based on the MNIST dataset, and the necessary quantum circuit, tensor network and data utility functions.
+The project contains a set of notebooks that allow you to play with the implementation of the tensor network classification algorithm plus binary classification example on the MNIST dataset, and the necessary quantum circuit, tensor network, and data utility functions.
 
 ### Notebooks
 
-For executing the notebooks, simply enter the ```/notebooks``` folder and launch jupyter lab.
+For executing the notebooks, simply go into the ```/notebooks``` folder and launch jupyter lab.
 
 ```bash
 cd notbooks
@@ -65,9 +65,9 @@ python -m quantum.network
 ## Project structure 
 
 - **/notebooks**: Holds the experiments used for the development of the tensor network code and an isolated example of its functioning. </br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **AltContraction.ipynb**: Monolith implementation of the tensor network contraction and labeling. </br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **TensorNetwork.ipynb**: Monolith relying on the method tensornetwork.contractors.auto() </br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **RefactorTest.ipynb**: Functional refactoring of the tensor network contraction and labeling. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **Functional.ipynb**: Functional refactoring of the tensor network contraction and labeling. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **Monolith.ipynb**: Monolith implementation of the tensor network contraction and labeling. </br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -  **AutoContraction.ipynb**: Monolith implementation relying on the method tensornetwork.contractors.auto() </br>
 - **/quantum**: Holds the codebase for the classification algorithms: </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **network.py**: Holds the QuantumNetwork class with its respective training and prediction methods. </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - **/utils**: Holds the scripts supporting the functioning of the network. </br>
