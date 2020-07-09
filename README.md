@@ -13,6 +13,14 @@ This project implements part of the numerical experiments proposed by Huggins et
 The quantum circuits are implemented using [Qiskit](https://qiskit.org/).
 The tensor networks are implemented using [TensorNetwork](https://github.com/google/TensorNetwork)
 
+## Run w/o Install
+
+You can get a taste of the tensor algorithms used in this project with zero setup pain by accessing the following Google Colab notebooks:
+
+- [Functional TN notebook](https://colab.research.google.com/drive/1YAwQNKy3afOqCqWn31j_r3qZ19jWhmLA?usp=sharing)
+
+- [Monolith TN notebook](https://colab.research.google.com/drive/122IO8YMrWMxiPwIshLCMNG3wjbQO_rvG?usp=sharing)
+
 ## Installation
 
 Install the dependencies from the requirements file by using [pip](https://pip.pypa.io/en/stable/)
@@ -68,7 +76,12 @@ python -m quantum.network
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - **data_utils.py**: Preprocessing functions for loading the classic data into the network. </br>
 
 ## Roadmap
-The project is still under development. We aim to generalize the examples presented, and incorporate more lightweight networks like the MPS base one presented by Stavros et al. in [TensorNetwork for Machine Learning](https://arxiv.org/abs/1906.06329) 
+The project is still under development. We aim to generalize the examples presented, and incorporate more lightweight networks like the MPS base one presented by Stavros et al. in [TensorNetwork for Machine Learning](https://arxiv.org/abs/1906.06329). 
+Next milestones are:
+- Parametrize the naive tensor network contraction for v!=2
+- Implement more resource efficient network contractions.
+- Implement lighter tensor network architectures (MPS).
+- Adapt the implementation for the non-binary classification task.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change. 

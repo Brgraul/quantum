@@ -143,7 +143,7 @@ def contract(tensor_data: List[tn.Node], tensor_network: List[tn.Node]) -> np.ar
     a naive algorithm.
 
     NOTE: This is a fragile implementation - Only works with v = 2 -pending the solution
-    of the issue with Google/TensorNetwork method
+    of the issue with the Google/TensorNetwork method
     tensornetwork.contractors.auto(nodes, …)
 
     -> The contraction algorithm finding falls in an infinite recursion, that
